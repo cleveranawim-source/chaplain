@@ -697,10 +697,6 @@
         <div class="panel-body form-grid">
           <div class="two-col">
             <div>
-              <label for="studentName">학생 표시</label>
-              <input id="studentName" type="text" placeholder="예: 1학년 3반 A학생" />
-            </div>
-            <div>
               <label for="gradeLevel">학교급</label>
               <select id="gradeLevel">
                 <option>중학교</option>
@@ -752,6 +748,7 @@
               <label class="chip"><input type="checkbox" value="주제 발표"><span>발표</span></label>
               <label class="chip"><input type="checkbox" value="성찰 글쓰기"><span>글쓰기</span></label>
               <label class="chip"><input type="checkbox" value="모둠 프로젝트"><span>프로젝트</span></label>
+              <label class="chip"><input type="checkbox" value="협동활동"><span>협동활동</span></label>
               <label class="chip"><input type="checkbox" value="봉사와 실천 계획 세우기"><span>실천 계획</span></label>
               <label class="chip"><input type="checkbox" value="핵심 질문 만들기"><span>질문 만들기</span></label>
               <label class="chip"><input type="checkbox" value="성경 본문과 생활 사례 비교하기"><span>사례 비교</span></label>
@@ -963,6 +960,8 @@
       "발표": "주제 발표",
       "글쓰기": "성찰 글쓰기",
       "프로젝트": "모둠 프로젝트",
+      "협동": "협동활동",
+      "협동활동": "협동활동",
       "실천계획": "봉사와 실천 계획 세우기",
       "실천 계획": "봉사와 실천 계획 세우기",
       "질문만들기": "핵심 질문 만들기",
@@ -1274,7 +1273,7 @@
       savedList.innerHTML = records.map((record, index) => `
         <article class="saved-item">
           <div class="saved-title">
-            <span>${escapeHtml(record.name || "이름 없음")} · ${escapeHtml(record.subject)}</span>
+            <span>${escapeHtml(record.subject || "과목 미입력")}</span>
             <span class="mini-actions">
               <button class="mini" type="button" data-copy="${index}">복사</button>
               <button class="mini" type="button" data-delete="${index}">삭제</button>
@@ -1994,7 +1993,6 @@
     });
 
     document.querySelector("#sampleBtn").addEventListener("click", () => {
-      document.querySelector("#studentName").value = "1학년 2반 A학생";
       document.querySelector("#gradeLevel").value = "중학교";
       document.querySelector("#subjectName").value = "종교";
       document.querySelector("#unitName").value = "공동체, 이웃 사랑, 섬김";
@@ -2073,7 +2071,7 @@
       }
       const records = getRecords();
       records.unshift({
-        name: document.querySelector("#studentName").value.trim(),
+        name: "",
         subject: document.querySelector("#subjectName").value,
         text,
         savedAt: new Date().toISOString()
@@ -2186,8 +2184,7 @@
         showToast("내보낼 메모가 없습니다");
         return;
       }
-      const rows = [["학생 표시", "과목", "세특 초안", "저장 시각"], ...records.map((record) => [
-        record.name || "",
+      const rows = [["과목", "세특 초안", "저장 시각"], ...records.map((record) => [
         record.subject || "",
         record.text || "",
         record.savedAt || ""
