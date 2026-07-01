@@ -1,0 +1,2205 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>기독교 학교 종교과목 세특 도우미</title>
+  <style>
+    :root {
+      --bg: #f7f3ec;
+      --ink: #25211c;
+      --muted: #6d6257;
+      --line: #dfd2c3;
+      --panel: #fffaf3;
+      --panel-strong: #f0e5d7;
+      --green: #2f6f5e;
+      --green-soft: #dcebe4;
+      --blue: #2f5f88;
+      --blue-soft: #dce8f2;
+      --rose: #9b4652;
+      --rose-soft: #f3dfe2;
+      --gold: #8b6325;
+      --gold-soft: #f1dfb8;
+      --shadow: 0 18px 42px rgba(75, 53, 28, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
+      background:
+        linear-gradient(135deg, rgba(47, 111, 94, 0.12), transparent 34%),
+        linear-gradient(315deg, rgba(139, 99, 37, 0.13), transparent 28%),
+        var(--bg);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app-shell {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 28px 22px 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .title-block h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 3.4vw, 3rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .title-block p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .privacy-note {
+      width: min(340px, 100%);
+      padding: 14px 16px;
+      color: #355247;
+      background: var(--green-soft);
+      border: 1px solid rgba(47, 111, 94, 0.25);
+      border-radius: 8px;
+      line-height: 1.55;
+      font-size: 0.92rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 430px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(255, 250, 243, 0.94);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 18px 0;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: 0;
+    }
+
+    .input-panel .panel-header h2 {
+      font-size: clamp(1.28rem, 2.2vw, 1.8rem);
+      line-height: 1.2;
+      color: #243d35;
+      font-weight: 900;
+    }
+
+    .panel-header h2.major-title {
+      font-size: clamp(1.42rem, 2.4vw, 2rem);
+      line-height: 1.18;
+      color: #243d35;
+      font-weight: 900;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    label,
+    .label {
+      display: block;
+      margin-bottom: 7px;
+      color: #3b332c;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #d8c9b8;
+      border-radius: 8px;
+      background: #fffdf9;
+      color: var(--ink);
+      padding: 11px 12px;
+      outline: none;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    textarea {
+      min-height: 94px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.14);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .inline-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .help-text {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    .chip-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      position: relative;
+    }
+
+    .chip input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+    }
+
+    .chip span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #d7c7b5;
+      border-radius: 999px;
+      background: #fffdf9;
+      color: #4b4036;
+      font-size: 0.9rem;
+      line-height: 1.2;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    .chip input:checked + span {
+      border-color: rgba(47, 111, 94, 0.55);
+      background: var(--green-soft);
+      color: #21483d;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--panel-strong);
+      color: #3a3028;
+      font-weight: 800;
+    }
+
+    .btn.primary {
+      background: var(--green);
+      color: white;
+    }
+
+    .btn.blue {
+      background: var(--blue);
+      color: white;
+    }
+
+    .btn.navy {
+      background: #172a46;
+      color: white;
+    }
+
+    .btn.warn {
+      background: var(--gold-soft);
+      color: #614516;
+    }
+
+    .btn.danger {
+      background: var(--rose-soft);
+      color: #71313b;
+    }
+
+    .output-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .result-box {
+      min-height: 184px;
+      padding: 18px;
+      border-radius: 8px;
+      border: 1px solid #d9c9b6;
+      background: #fffdf9;
+      line-height: 1.82;
+      white-space: pre-wrap;
+      word-break: keep-all;
+    }
+
+    .meter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eee3d4;
+      color: #55483c;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    .pill.good {
+      background: var(--green-soft);
+      color: #255347;
+    }
+
+    .pill.caution {
+      background: var(--rose-soft);
+      color: #71313b;
+    }
+
+    .guidance {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .guide-card {
+      padding: 13px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fffdf9;
+      line-height: 1.55;
+      font-size: 0.9rem;
+    }
+
+    .guide-card strong {
+      display: block;
+      margin-bottom: 5px;
+      color: #2f2a25;
+    }
+
+    .saved-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .batch-area {
+      min-height: 116px;
+      font-family: inherit;
+      white-space: pre;
+      overflow: auto;
+    }
+
+    .batch-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .option-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+      margin: 14px 0 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 249, 0.72);
+    }
+
+    .option-strip label {
+      margin-bottom: 6px;
+    }
+
+    .check-line {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      min-height: 42px;
+      padding-top: 22px;
+      color: #3d332b;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .check-line input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--green);
+    }
+
+    .batch-unit-box {
+      margin: 12px 0 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 249, 0.74);
+    }
+
+    .batch-unit-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .batch-unit-head .label {
+      margin-bottom: 0;
+    }
+
+    .batch-unit-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .visible-check-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+    }
+
+    .visible-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      min-height: 42px;
+      padding: 10px 11px;
+      border: 1px solid #d7c7b5;
+      border-radius: 8px;
+      background: #fffdf9;
+      color: #3f372f;
+      line-height: 1.35;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .visible-check input {
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      flex: 0 0 auto;
+      accent-color: var(--green);
+    }
+
+    .visible-check:has(input:checked) {
+      border-color: rgba(47, 111, 94, 0.55);
+      background: var(--green-soft);
+      color: #21483d;
+    }
+
+    .similarity-report {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid #d9c9b6;
+      border-radius: 8px;
+      background: #fffdf9;
+      color: #4b4036;
+      line-height: 1.55;
+      font-size: 0.9rem;
+    }
+
+    .similarity-report strong {
+      color: #302922;
+    }
+
+    .file-input {
+      width: 100%;
+      border: 1px dashed #cdbba7;
+      border-radius: 8px;
+      padding: 10px;
+      background: #fffdf9;
+      color: #4b4036;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf9;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #eadfd2;
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    th {
+      background: #f3eadf;
+      color: #3d332b;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .batch-result-text {
+      min-width: 360px;
+      color: #443a32;
+    }
+
+    .saved-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf9;
+      padding: 12px;
+    }
+
+    .saved-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 7px;
+      font-weight: 800;
+    }
+
+    .saved-item p {
+      margin: 0;
+      color: #4d433a;
+      line-height: 1.65;
+      font-size: 0.92rem;
+    }
+
+    .mini-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .mini {
+      min-height: 30px;
+      padding: 6px 9px;
+      border-radius: 7px;
+      background: #ede2d3;
+      color: #4d4034;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .empty {
+      padding: 16px;
+      border: 1px dashed #d3c4b4;
+      border-radius: 8px;
+      color: var(--muted);
+      background: rgba(255, 253, 249, 0.72);
+      line-height: 1.55;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(12px);
+      padding: 11px 14px;
+      border-radius: 8px;
+      background: #25211c;
+      color: white;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+      z-index: 5;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .guidance {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app-shell {
+        padding: 20px 13px 36px;
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .inline-row {
+        grid-template-columns: 1fr;
+      }
+
+      .option-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .check-line {
+        padding-top: 0;
+      }
+
+      .panel-header,
+      .panel-body {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .btn {
+        flex: 1 1 calc(50% - 9px);
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .chip span {
+        min-height: 36px;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .topbar,
+      .input-panel,
+      .toolbar,
+      .saved-panel,
+      .toast {
+        display: none !important;
+      }
+
+      .app-shell {
+        max-width: none;
+        padding: 0;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .panel {
+        border: 0;
+        box-shadow: none;
+      }
+
+      .result-box {
+        border: 1px solid #999;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="title-block">
+        <h1>기독교 학교 종교과목 세특 도우미</h1>
+        <p>중학교와 고등학교 종교 수업의 관찰 근거를 바탕으로 생활기록부 교과세부특기사항 초안을 만듭니다. 신앙의 깊이를 평가하지 않고, 수업에서 드러난 이해, 해석, 성찰, 표현, 공동체 태도를 중심으로 정리합니다.</p>
+      </div>
+      <aside class="privacy-note">입력 내용은 이 브라우저 안에만 저장됩니다. 학생 실명 대신 번호나 이니셜을 사용하면 더 안전합니다.</aside>
+    </header>
+
+    <section class="layout">
+      <form class="panel input-panel" id="setakForm">
+        <div class="panel-header">
+          <h2>관찰 근거 입력</h2>
+          <span class="pill">로컬 저장</span>
+        </div>
+        <div class="panel-body form-grid">
+          <div class="two-col">
+            <div>
+              <label for="studentName">학생 표시</label>
+              <input id="studentName" type="text" placeholder="예: 1학년 3반 A학생" />
+            </div>
+            <div>
+              <label for="gradeLevel">학교급</label>
+              <select id="gradeLevel">
+                <option>중학교</option>
+                <option>고등학교</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div>
+              <label for="subjectName">과목명</label>
+              <input id="subjectName" type="text" placeholder="예: 종교" />
+            </div>
+            <div>
+              <label for="lengthMode">분량</label>
+              <select id="lengthMode">
+                <option value="standard">표준형</option>
+                <option value="short">짧게</option>
+                <option value="long">풍부하게</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="unitName">단원 또는 수업 주제</label>
+            <select id="unitName">
+              <option>성경 본문 해석과 삶의 적용</option>
+              <option>창조 세계와 인간 이해</option>
+              <option>예수의 가르침과 하나님 나라</option>
+              <option>공동체, 이웃 사랑, 섬김</option>
+              <option>기독교 윤리와 현대 사회 쟁점</option>
+              <option>진로, 소명, 책임 있는 선택</option>
+              <option>세계 종교 이해와 상호 존중</option>
+              <option>기독교 역사와 문화</option>
+            </select>
+            <div class="inline-row" style="margin-top: 8px;">
+              <input id="customUnit" type="text" placeholder="직접 추가할 단원/수업 주제" />
+              <button class="mini" type="button" id="addUnitBtn">추가</button>
+              <button class="mini" type="button" id="removeUnitBtn">삭제</button>
+            </div>
+            <p class="help-text">직접 추가한 주제는 이 브라우저에 저장됩니다.</p>
+          </div>
+
+          <div>
+            <div class="label">수업 활동</div>
+            <div class="chip-grid" data-group="activity">
+              <label class="chip"><input type="checkbox" value="성경 본문 읽기와 해석 활동"><span>본문 해석</span></label>
+              <label class="chip"><input type="checkbox" value="질문 중심 토론"><span>토론</span></label>
+              <label class="chip"><input type="checkbox" value="주제 발표"><span>발표</span></label>
+              <label class="chip"><input type="checkbox" value="성찰 글쓰기"><span>글쓰기</span></label>
+              <label class="chip"><input type="checkbox" value="모둠 프로젝트"><span>프로젝트</span></label>
+              <label class="chip"><input type="checkbox" value="봉사와 실천 계획 세우기"><span>실천 계획</span></label>
+              <label class="chip"><input type="checkbox" value="핵심 질문 만들기"><span>질문 만들기</span></label>
+              <label class="chip"><input type="checkbox" value="성경 본문과 생활 사례 비교하기"><span>사례 비교</span></label>
+              <label class="chip"><input type="checkbox" value="윤리적 쟁점 사례 분석"><span>사례 분석</span></label>
+              <label class="chip"><input type="checkbox" value="역할극과 상황 재구성 활동"><span>역할극</span></label>
+              <label class="chip"><input type="checkbox" value="학습 포트폴리오 정리"><span>포트폴리오</span></label>
+            </div>
+          </div>
+
+          <div>
+            <div class="label">학생 강점</div>
+            <div class="chip-grid" data-group="strength">
+              <label class="chip"><input type="checkbox" value="본문의 핵심 의미를 파악하는 힘"><span>이해</span></label>
+              <label class="chip"><input type="checkbox" value="자신의 질문을 세워 탐구하는 태도"><span>질문</span></label>
+              <label class="chip"><input type="checkbox" value="타인의 의견을 경청하고 연결하는 태도"><span>경청</span></label>
+              <label class="chip"><input type="checkbox" value="사회 문제와 연결하여 해석하는 사고"><span>연결</span></label>
+              <label class="chip"><input type="checkbox" value="배운 내용을 실생활과 연결하여 적용하는 힘"><span>실생활 적용</span></label>
+              <label class="chip"><input type="checkbox" value="자신의 삶과 선택을 성찰하는 힘"><span>성찰</span></label>
+              <label class="chip"><input type="checkbox" value="공동체 안에서 책임 있게 협력하는 태도"><span>협력</span></label>
+              <label class="chip"><input type="checkbox" value="생각을 논리적으로 표현하는 힘"><span>표현</span></label>
+              <label class="chip"><input type="checkbox" value="본문과 자료에 근거하여 설명하는 힘"><span>근거 제시</span></label>
+              <label class="chip"><input type="checkbox" value="여러 관점을 비교하며 비판적으로 사고하는 힘"><span>비판적 사고</span></label>
+              <label class="chip"><input type="checkbox" value="학습 과제를 스스로 계획하고 보완하는 태도"><span>자기주도</span></label>
+              <label class="chip"><input type="checkbox" value="이웃과 공동체의 입장을 공감적으로 이해하는 태도"><span>공감</span></label>
+            </div>
+          </div>
+
+          <div>
+            <label for="evidence">관찰 메모</label>
+            <textarea id="evidence" placeholder="예: 선한 사마리아인 본문을 오늘날의 학교생활과 연결해 발표함. 다른 모둠 의견을 듣고 질문을 덧붙임."></textarea>
+          </div>
+
+          <div>
+            <label for="toneMode">문체</label>
+            <select id="toneMode">
+              <option value="balanced">균형 있게</option>
+              <option value="growth">성장 중심</option>
+              <option value="academic">학업 역량 중심</option>
+              <option value="community">공동체 태도 중심</option>
+            </select>
+          </div>
+
+          <div class="toolbar">
+            <button class="btn primary" type="submit">초안 만들기</button>
+            <button class="btn" type="button" id="sampleBtn">예시 채우기</button>
+            <button class="btn danger" type="button" id="clearBtn">입력 비우기</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="output-grid">
+        <section class="panel">
+          <div class="panel-header">
+            <h2 class="major-title">개별 학생 세특 초안</h2>
+            <div class="meter-row">
+              <span class="pill" id="charCount">0자</span>
+              <span class="pill good" id="safetyState">점검 대기</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="result-box" id="resultText">왼쪽에서 관찰 근거를 입력한 뒤 초안 만들기를 누르세요.</div>
+            <div class="toolbar">
+              <button class="btn blue" type="button" id="copyBtn">복사</button>
+              <button class="btn" type="button" id="saveBtn">학생 메모 저장</button>
+              <button class="btn" type="button" id="variantBtn">다른 표현</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="guidance">
+          <div class="guide-card">
+            <strong>권장 표현</strong>
+            본문 이해, 해석 과정, 질문, 토론 참여, 성찰 글, 프로젝트 결과처럼 수업에서 확인 가능한 근거를 씁니다.
+          </div>
+          <div class="guide-card">
+            <strong>주의 표현</strong>
+            믿음이 좋다, 신앙이 깊다, 경건하다처럼 내면 신앙을 직접 평가하는 문장은 피합니다.
+          </div>
+          <div class="guide-card">
+            <strong>전환 원칙</strong>
+            신앙 고백은 평가 대상이 아니라 학습 자료입니다. 표현은 사고, 태도, 탐구, 공동체 역량으로 바꿉니다.
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2 class="major-title">반 전체 생성</h2>
+            <span class="pill" id="batchCount">0명</span>
+          </div>
+          <div class="panel-body">
+            <div class="two-col">
+              <div>
+                <label for="batchFile">엑셀/CSV 파일 업로드</label>
+                <input class="file-input" id="batchFile" type="file" accept=".xlsx,.csv,.txt" />
+                <p class="help-text">교육청 과목세특 엑셀 양식(.xlsx)을 바로 올릴 수 있습니다. CSV나 엑셀 표 붙여넣기도 계속 지원합니다.</p>
+              </div>
+              <div>
+                <label for="batchPaste">엑셀 표 붙여넣기</label>
+                <textarea class="batch-area" id="batchPaste" placeholder="학생,학교급,과목명,단원,활동,강점,관찰메모&#10;A학생,중학교,종교,공동체 이웃 사랑,토론;글쓰기,경청;성찰,본문을 학교생활과 연결해 발표함"></textarea>
+              </div>
+            </div>
+            <div class="option-strip">
+              <div>
+                <label for="diversityMode">겹침 방지</label>
+                <select id="diversityMode">
+                  <option value="medium">보통</option>
+                  <option value="low">낮음</option>
+                  <option value="high">높음</option>
+                </select>
+              </div>
+              <div>
+                <label for="batchFocusMode">학생 유형</label>
+                <select id="batchFocusMode">
+                  <option value="auto">자동 분배</option>
+                  <option value="understanding">이해형</option>
+                  <option value="question">질문형</option>
+                  <option value="reflection">성찰형</option>
+                  <option value="discussion">토론형</option>
+                  <option value="presentation">발표형</option>
+                  <option value="practice">실천형</option>
+                </select>
+              </div>
+              <div>
+                <label for="batchIntensityMode">수행 강도</label>
+                <select id="batchIntensityMode">
+                  <option value="stable">안정적 수행</option>
+                  <option value="basic">기본 참여</option>
+                  <option value="growth">성장 관찰</option>
+                  <option value="strong">뚜렷한 강점</option>
+                  <option value="support">보완 필요 포함</option>
+                </select>
+              </div>
+              <label class="check-line" for="autoRotateOptions">
+                <input id="autoRotateOptions" type="checkbox" checked />
+                학생별로 활동/강점 섞기
+              </label>
+            </div>
+            <div class="batch-unit-box">
+              <div class="batch-unit-head">
+                <div>
+                  <div class="label">반 전체 주제 섞기</div>
+                  <p class="help-text" style="margin-top: 3px;">체크한 단원/수업주제 안에서 학생별로 다르게 배정합니다. 직접 추가한 주제도 자동으로 포함됩니다.</p>
+                </div>
+                <div class="batch-unit-tools">
+                  <button class="mini" type="button" id="selectAllBatchUnits">전체 선택</button>
+                  <button class="mini" type="button" id="clearBatchUnits">선택 해제</button>
+                </div>
+              </div>
+              <div class="visible-check-grid" id="batchUnitChoices"></div>
+              <div style="margin-top: 10px;">
+                <label for="batchUnitMode">주제 배정 방식</label>
+                <select id="batchUnitMode">
+                  <option value="cycle">고르게 순환</option>
+                  <option value="random">랜덤 섞기</option>
+                </select>
+              </div>
+            </div>
+            <div class="batch-actions">
+              <button class="btn primary" type="button" id="batchGenerateBtn">일괄 생성</button>
+              <button class="btn navy" type="button" id="batchExportEduBtn">결과 XLSX 저장</button>
+              <button class="btn" type="button" id="batchSimilarityBtn">중복 검사</button>
+              <button class="btn danger" type="button" id="batchClearBtn">비우기</button>
+            </div>
+            <div id="similarityReport" class="similarity-report" hidden></div>
+            <div id="batchResults" class="saved-list" style="margin-top: 14px;">
+              <div class="empty">CSV 파일을 올리거나 엑셀 표를 붙여넣으면 학생별 세특 초안이 한 번에 생성됩니다.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel saved-panel">
+          <div class="panel-header">
+            <h2>저장한 학생 메모</h2>
+            <button class="mini" type="button" id="exportBtn">CSV 내보내기</button>
+          </div>
+          <div class="panel-body">
+            <div id="savedList" class="saved-list"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast">완료</div>
+
+  <script>
+    const STORAGE_KEY = "christian-subject-setak-records-v1";
+    const UNIT_STORAGE_KEY = "christian-subject-setak-units-v1";
+    const form = document.querySelector("#setakForm");
+    const resultText = document.querySelector("#resultText");
+    const charCount = document.querySelector("#charCount");
+    const safetyState = document.querySelector("#safetyState");
+    const savedList = document.querySelector("#savedList");
+    const toast = document.querySelector("#toast");
+    const unitSelect = document.querySelector("#unitName");
+    const customUnitInput = document.querySelector("#customUnit");
+    const batchFile = document.querySelector("#batchFile");
+    const batchPaste = document.querySelector("#batchPaste");
+    const batchResults = document.querySelector("#batchResults");
+    const batchCount = document.querySelector("#batchCount");
+    const similarityReport = document.querySelector("#similarityReport");
+    const batchUnitChoices = document.querySelector("#batchUnitChoices");
+    const cautionWords = ["믿음이 좋", "신앙이 깊", "경건", "은혜를 많이", "하나님을 사랑", "기도를 잘", "모범적인 신앙"];
+    const defaultUnits = [...unitSelect.options].map((option) => option.value);
+    const activityMap = {
+      "본문해석": "성경 본문 읽기와 해석 활동",
+      "본문 해석": "성경 본문 읽기와 해석 활동",
+      "토론": "질문 중심 토론",
+      "발표": "주제 발표",
+      "글쓰기": "성찰 글쓰기",
+      "프로젝트": "모둠 프로젝트",
+      "실천계획": "봉사와 실천 계획 세우기",
+      "실천 계획": "봉사와 실천 계획 세우기",
+      "질문만들기": "핵심 질문 만들기",
+      "질문 만들기": "핵심 질문 만들기",
+      "사례비교": "성경 본문과 생활 사례 비교하기",
+      "사례 비교": "성경 본문과 생활 사례 비교하기",
+      "사례분석": "윤리적 쟁점 사례 분석",
+      "사례 분석": "윤리적 쟁점 사례 분석",
+      "역할극": "역할극과 상황 재구성 활동",
+      "포트폴리오": "학습 포트폴리오 정리"
+    };
+    const strengthMap = {
+      "이해": "본문의 핵심 의미를 파악하는 힘",
+      "질문": "자신의 질문을 세워 탐구하는 태도",
+      "경청": "타인의 의견을 경청하고 연결하는 태도",
+      "연결": "사회 문제와 연결하여 해석하는 사고",
+      "실생활": "배운 내용을 실생활과 연결하여 적용하는 힘",
+      "실생활적용": "배운 내용을 실생활과 연결하여 적용하는 힘",
+      "적용": "배운 내용을 실생활과 연결하여 적용하는 힘",
+      "성찰": "자신의 삶과 선택을 성찰하는 힘",
+      "협력": "공동체 안에서 책임 있게 협력하는 태도",
+      "표현": "생각을 논리적으로 표현하는 힘",
+      "근거": "본문과 자료에 근거하여 설명하는 힘",
+      "근거제시": "본문과 자료에 근거하여 설명하는 힘",
+      "근거 제시": "본문과 자료에 근거하여 설명하는 힘",
+      "비판": "여러 관점을 비교하며 비판적으로 사고하는 힘",
+      "비판적사고": "여러 관점을 비교하며 비판적으로 사고하는 힘",
+      "비판적 사고": "여러 관점을 비교하며 비판적으로 사고하는 힘",
+      "자기주도": "학습 과제를 스스로 계획하고 보완하는 태도",
+      "자기 주도": "학습 과제를 스스로 계획하고 보완하는 태도",
+      "공감": "이웃과 공동체의 입장을 공감적으로 이해하는 태도"
+    };
+    const focusProfiles = {
+      understanding: {
+        label: "이해형",
+        activities: ["성경 본문 읽기와 해석 활동", "학습 포트폴리오 정리"],
+        strengths: ["본문의 핵심 의미를 파악하는 힘", "본문과 자료에 근거하여 설명하는 힘"],
+        sentence: "본문의 핵심 의미를 차분히 파악하고 주요 개념을 수업 맥락에 맞게 정리하는 모습이 나타남."
+      },
+      question: {
+        label: "질문형",
+        activities: ["질문 중심 토론", "핵심 질문 만들기"],
+        strengths: ["자신의 질문을 세워 탐구하는 태도", "여러 관점을 비교하며 비판적으로 사고하는 힘"],
+        sentence: "주어진 내용을 그대로 받아들이기보다 스스로 질문을 세우며 탐구의 방향을 넓히려는 태도가 돋보임."
+      },
+      reflection: {
+        label: "성찰형",
+        activities: ["성찰 글쓰기", "봉사와 실천 계획 세우기"],
+        strengths: ["자신의 삶과 선택을 성찰하는 힘", "배운 내용을 실생활과 연결하여 적용하는 힘"],
+        sentence: "학습 내용을 자신의 삶과 선택의 문제에 연결하여 성찰하려는 태도가 안정적으로 관찰됨."
+      },
+      discussion: {
+        label: "토론형",
+        activities: ["질문 중심 토론", "윤리적 쟁점 사례 분석"],
+        strengths: ["타인의 의견을 경청하고 연결하는 태도", "이웃과 공동체의 입장을 공감적으로 이해하는 태도"],
+        sentence: "토론 과정에서 친구들의 의견을 경청하고 논의의 흐름을 이어 가는 역할을 수행함."
+      },
+      presentation: {
+        label: "발표형",
+        activities: ["주제 발표", "성경 본문과 생활 사례 비교하기"],
+        strengths: ["생각을 논리적으로 표현하는 힘", "본문과 자료에 근거하여 설명하는 힘"],
+        sentence: "자신의 생각을 근거와 함께 표현하며 학습 내용을 분명하게 전달하려는 모습이 보임."
+      },
+      practice: {
+        label: "실천형",
+        activities: ["봉사와 실천 계획 세우기", "모둠 프로젝트"],
+        strengths: ["공동체 안에서 책임 있게 협력하는 태도", "배운 내용을 실생활과 연결하여 적용하는 힘"],
+        sentence: "배운 내용을 공동체 안의 책임과 실천 문제로 확장하여 생각하려는 태도가 의미 있음."
+      }
+    };
+    const focusOrder = ["understanding", "question", "reflection", "discussion", "presentation", "practice"];
+    const intensityLines = {
+      basic: "기본적인 참여 태도를 바탕으로 학습 내용을 따라가며 자신의 생각을 정리하려는 모습을 보임.",
+      stable: "수업 과정에 안정적으로 참여하며 관찰 가능한 근거를 바탕으로 자신의 이해를 표현함.",
+      growth: "초기보다 생각의 근거를 더 구체화하며 학습 내용을 자신의 언어로 정리하는 성장이 나타남.",
+      strong: "해당 주제에 대한 이해와 표현이 비교적 뚜렷하며 수업 활동 안에서 강점이 분명히 드러남.",
+      support: "학습 내용을 정리하는 데 시간이 필요하지만, 활동 과정에서 질문과 참여를 통해 이해를 넓혀 감."
+    };
+    const structureOpeners = [
+      "수업 활동에서",
+      "학습 과정 전반에서",
+      "종교 수업에서",
+      "단원 학습 과정에서",
+      "모둠 활동과 개인 성찰 과정에서",
+      "본문 해석 활동을 중심으로"
+    ];
+    const interpretationClosers = [
+      "성경 본문이나 기독교적 관점을 자신의 삶과 공동체 문제에 연결하여 해석하려는 모습이 인상적임.",
+      "종교적 주제를 생활 속 선택과 책임의 문제로 확장하여 바라보려는 태도가 나타남.",
+      "본문의 의미를 단순 암기가 아니라 관계, 선택, 공동체의 맥락에서 이해하려는 모습이 관찰됨.",
+      "학습한 내용을 개인의 생각과 사회적 쟁점에 연결해 균형 있게 정리하려는 태도가 의미 있음.",
+      "기독교적 관점을 하나의 탐구 틀로 삼아 삶의 문제를 성찰하려는 학습 태도를 보임."
+    ];
+    const individualToneSets = [
+      {
+        balanced: (strengthText) => `${strengthText}가 돋보이며, 배운 내용을 자신의 언어로 정리하려는 태도가 안정적임.`,
+        growth: (strengthText) => `${strengthText}를 바탕으로 이전보다 구체적인 근거를 들어 자신의 생각을 설명하는 성장이 나타남.`,
+        academic: (strengthText) => `${strengthText}를 활용하여 종교적 주제와 사회적 쟁점을 연결해 분석하는 모습이 관찰됨.`,
+        community: (strengthText) => `${strengthText}를 통해 타인의 관점을 존중하고 공동체 안에서 책임 있는 선택의 의미를 탐색함.`
+      },
+      {
+        balanced: (strengthText) => `${strengthText}를 바탕으로 수업의 핵심 내용을 차분히 따라가며 자신의 생각을 정리함.`,
+        growth: (strengthText) => `${strengthText}가 점차 구체화되어 학습 내용을 더 분명한 근거와 함께 표현함.`,
+        academic: (strengthText) => `${strengthText}를 토대로 본문과 현대적 쟁점 사이의 관련성을 탐색함.`,
+        community: (strengthText) => `${strengthText}를 보이며 공동체 안에서 서로의 관점을 존중하는 태도를 드러냄.`
+      },
+      {
+        balanced: (strengthText) => `${strengthText}를 중심으로 수업 활동에 참여하고 배움의 내용을 자신의 말로 풀어냄.`,
+        growth: (strengthText) => `${strengthText}에서 이전보다 적극성이 나타나며 생각을 다듬어 가는 과정이 보임.`,
+        academic: (strengthText) => `${strengthText}를 활용해 종교적 개념을 단순 암기보다 해석의 관점에서 다룸.`,
+        community: (strengthText) => `${strengthText}를 통해 관계와 책임의 의미를 수업 주제와 연결하여 성찰함.`
+      }
+    ];
+    const variants = [
+      {
+        opener: "수업 활동에서",
+        connector: "를 바탕으로",
+        closer: "자신의 생각을 구체화함."
+      },
+      {
+        opener: "학습 과정 전반에서",
+        connector: "와 관련하여",
+        closer: "배움의 내용을 자신의 언어로 정리함."
+      },
+      {
+        opener: "종교 수업에서",
+        connector: "을 중심으로",
+        closer: "공동체적 의미를 성찰하는 모습을 보임."
+      }
+    ];
+    let variantIndex = 0;
+    let loadedBatchText = "";
+    let batchGenerated = [];
+    let batchLoadToken = 0;
+
+    function selectedValues(groupName) {
+      return [...document.querySelectorAll(`[data-group="${groupName}"] input:checked`)].map((item) => item.value);
+    }
+
+    function getCustomUnits() {
+      try {
+        return JSON.parse(localStorage.getItem(UNIT_STORAGE_KEY) || "[]");
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function setCustomUnits(units) {
+      const clean = [...new Set(units.map((unit) => unit.trim()).filter(Boolean))];
+      localStorage.setItem(UNIT_STORAGE_KEY, JSON.stringify(clean));
+      renderUnits();
+    }
+
+    function renderUnits(selectedValue) {
+      const units = [...defaultUnits, ...getCustomUnits().filter((unit) => !defaultUnits.includes(unit))];
+      const current = selectedValue || unitSelect.value;
+      unitSelect.innerHTML = units.map((unit) => `<option>${escapeHtml(unit)}</option>`).join("");
+      if (units.includes(current)) unitSelect.value = current;
+      renderBatchUnitChoices(units);
+    }
+
+    function renderBatchUnitChoices(units) {
+      const previouslyChecked = new Set([...batchUnitChoices.querySelectorAll("input:checked")].map((item) => item.value));
+      batchUnitChoices.innerHTML = units.map((unit) => {
+        const checked = previouslyChecked.size ? previouslyChecked.has(unit) : unit === unitSelect.value;
+        return `<label class="visible-check"><input type="checkbox" value="${escapeHtml(unit)}" ${checked ? "checked" : ""}><span>${escapeHtml(unit)}</span></label>`;
+      }).join("");
+    }
+
+    function selectedBatchUnits() {
+      return [...batchUnitChoices.querySelectorAll("input:checked")].map((item) => item.value);
+    }
+
+    function seededIndex(seedText, index, length) {
+      if (!length) return 0;
+      let hash = 2166136261;
+      const source = `${seedText || ""}-${index}`;
+      for (let i = 0; i < source.length; i += 1) {
+        hash ^= source.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return Math.abs(hash) % length;
+    }
+
+    function getRecords() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function setRecords(records) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      renderRecords();
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    function joinNatural(items, fallback) {
+      if (!items.length) return fallback;
+      if (items.length === 1) return items[0];
+      return `${items.slice(0, -1).join(", ")} 및 ${items[items.length - 1]}`;
+    }
+
+    function getFormState() {
+      return {
+        gradeLevel: document.querySelector("#gradeLevel").value,
+        subjectName: document.querySelector("#subjectName").value,
+        unitName: document.querySelector("#unitName").value,
+        evidence: document.querySelector("#evidence").value.trim(),
+        toneMode: document.querySelector("#toneMode").value,
+        lengthMode: document.querySelector("#lengthMode").value,
+        activities: selectedValues("activity"),
+        strengths: selectedValues("strength")
+      };
+    }
+
+    function pickByIndex(items, index, fallback = "") {
+      if (!items.length) return fallback;
+      return items[Math.abs(index) % items.length];
+    }
+
+    function uniqueMerge(primary, fallback) {
+      return [...new Set([...(primary || []), ...(fallback || [])].filter(Boolean))];
+    }
+
+    function makeSentence(data = getFormState()) {
+      const gradeLevel = data.gradeLevel || "중학교";
+      const unitName = data.unitName || "성경 본문 해석과 삶의 적용";
+      const evidence = (data.evidence || "").trim();
+      const toneMode = data.toneMode || "balanced";
+      const lengthMode = data.lengthMode || "standard";
+      const studentIndex = Number(data.studentIndex || 0);
+      const diversityMode = data.diversityMode || "low";
+      const focusKey = data.focusType && focusProfiles[data.focusType] ? data.focusType : "";
+      const focus = focusKey ? focusProfiles[focusKey] : null;
+      const baseActivities = data.activities || [];
+      const baseStrengths = data.strengths || [];
+      const activities = uniqueMerge(baseActivities, diversityMode === "low" || !focus ? [] : focus.activities).slice(0, diversityMode === "high" ? 3 : 2);
+      const strengths = uniqueMerge(baseStrengths, diversityMode === "low" || !focus ? [] : focus.strengths).slice(0, diversityMode === "high" ? 3 : 2);
+      const variant = diversityMode === "low" ? variants[variantIndex % variants.length] : {
+        opener: pickByIndex(structureOpeners, studentIndex, "수업 활동에서"),
+        connector: pickByIndex(["를 바탕으로", "와 관련하여", "을 중심으로", "의 흐름 속에서"], studentIndex + 1, "를 바탕으로"),
+        closer: ""
+      };
+
+      const activityText = joinNatural(activities, "수업 활동");
+      const strengthText = joinNatural(strengths, "배운 내용을 정리하고 표현하는 태도");
+      const levelNoun = gradeLevel === "고등학교" ? "개념적 이해와 비판적 사고" : "이해와 성찰";
+      const focusLine = focus ? focus.sentence : "";
+      const intensityLine = intensityLines[data.intensity || "stable"] || intensityLines.stable;
+      const closer = diversityMode === "low"
+        ? "성경 본문이나 기독교적 관점을 자신의 삶과 공동체 문제에 연결하여 해석하려는 모습이 인상적임."
+        : pickByIndex(interpretationClosers, studentIndex + (diversityMode === "high" ? 2 : 0), interpretationClosers[0]);
+
+      const toneSet = individualToneSets[variantIndex % individualToneSets.length];
+      const toneLines = {
+        balanced: toneSet.balanced(strengthText),
+        growth: toneSet.growth(strengthText),
+        academic: toneSet.academic(strengthText),
+        community: toneSet.community(strengthText)
+      };
+
+      const memoLine = evidence
+        ? `관찰 근거로는 ${evidence.replace(/\s+/g, " ")}`
+        : `${activityText}에 꾸준히 참여하며 학습 내용을 수업 맥락에 맞게 정리함.`;
+
+      if (lengthMode === "short") {
+        return `'${unitName}' 학습에서 ${activityText}에 참여하며 ${levelNoun}를 넓힘. ${focusLine || toneLines[toneMode]} ${memoLine}`;
+      }
+
+      if (lengthMode === "long") {
+        return `${variant.opener} '${unitName}' 주제${variant.connector} ${activityText}에 성실히 참여함. ${memoLine} ${focusLine || toneLines[toneMode]} ${intensityLine} 성경 본문이나 기독교적 관점을 단순한 정답으로 받아들이기보다, 삶의 문제와 공동체의 과제에 연결하여 해석하려는 태도가 의미 있음. 앞으로도 질문을 구체화하고 근거를 보완하면 종교적 주제에 대한 균형 있는 이해와 표현력이 더욱 확장될 것으로 기대됨.`;
+      }
+
+      return `${variant.opener} '${unitName}' 주제${variant.connector} ${activityText}에 참여하며 ${levelNoun}를 넓힘. ${memoLine} ${focusLine || toneLines[toneMode]} ${intensityLine} ${closer}`;
+    }
+
+    function inspectText(text) {
+      const found = cautionWords.filter((word) => text.includes(word));
+      charCount.textContent = `${text.length}자`;
+      if (found.length) {
+        safetyState.textContent = `주의: ${found.join(", ")}`;
+        safetyState.className = "pill caution";
+      } else {
+        safetyState.textContent = "표현 점검 통과";
+        safetyState.className = "pill good";
+      }
+    }
+
+    function updateResult() {
+      const sentence = makeSentence();
+      resultText.textContent = sentence;
+      inspectText(sentence);
+    }
+
+    function renderRecords() {
+      const records = getRecords();
+      if (!records.length) {
+        savedList.innerHTML = '<div class="empty">아직 저장한 메모가 없습니다. 초안을 만든 뒤 학생 메모 저장을 누르면 이곳에 쌓입니다.</div>';
+        return;
+      }
+
+      savedList.innerHTML = records.map((record, index) => `
+        <article class="saved-item">
+          <div class="saved-title">
+            <span>${escapeHtml(record.name || "이름 없음")} · ${escapeHtml(record.subject)}</span>
+            <span class="mini-actions">
+              <button class="mini" type="button" data-copy="${index}">복사</button>
+              <button class="mini" type="button" data-delete="${index}">삭제</button>
+            </span>
+          </div>
+          <p>${escapeHtml(record.text)}</p>
+        </article>
+      `).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("복사했습니다");
+      } catch (error) {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+        showToast("복사했습니다");
+      }
+    }
+
+    function splitList(value, map = {}) {
+      return String(value || "")
+        .split(/[;,/|]/)
+        .map((item) => item.trim())
+        .map((item) => map[item] || map[item.replace(/\s+/g, "")] || item)
+        .filter(Boolean);
+    }
+
+    function normalizeTone(value) {
+      const raw = String(value || "").trim();
+      if (["성장", "성장 중심", "growth"].includes(raw)) return "growth";
+      if (["학업", "학업 역량", "학업 역량 중심", "academic"].includes(raw)) return "academic";
+      if (["공동체", "공동체 태도", "공동체 태도 중심", "community"].includes(raw)) return "community";
+      return "balanced";
+    }
+
+    function normalizeLength(value) {
+      const raw = String(value || "").trim();
+      if (["짧게", "short"].includes(raw)) return "short";
+      if (["풍부하게", "길게", "long"].includes(raw)) return "long";
+      return "standard";
+    }
+
+    function normalizeFocus(value) {
+      const raw = String(value || "").replace(/\s+/g, "").toLowerCase();
+      const map = {
+        "이해": "understanding",
+        "이해형": "understanding",
+        "understanding": "understanding",
+        "질문": "question",
+        "질문형": "question",
+        "question": "question",
+        "성찰": "reflection",
+        "성찰형": "reflection",
+        "reflection": "reflection",
+        "토론": "discussion",
+        "토론형": "discussion",
+        "discussion": "discussion",
+        "발표": "presentation",
+        "발표형": "presentation",
+        "presentation": "presentation",
+        "실천": "practice",
+        "실천형": "practice",
+        "practice": "practice"
+      };
+      return map[raw] || "";
+    }
+
+    function normalizeIntensity(value) {
+      const raw = String(value || "").replace(/\s+/g, "").toLowerCase();
+      const map = {
+        "기본": "basic",
+        "기본참여": "basic",
+        "basic": "basic",
+        "안정": "stable",
+        "안정적수행": "stable",
+        "stable": "stable",
+        "성장": "growth",
+        "성장관찰": "growth",
+        "growth": "growth",
+        "뚜렷한강점": "strong",
+        "강점": "strong",
+        "strong": "strong",
+        "보완": "support",
+        "보완필요": "support",
+        "support": "support"
+      };
+      return map[raw] || "";
+    }
+
+    function parseDelimited(text) {
+      const source = String(text || "").replace(/^\ufeff/, "").trim();
+      if (!source) return [];
+      const delimiter = source.includes("\t") ? "\t" : ",";
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+
+      for (let index = 0; index < source.length; index += 1) {
+        const char = source[index];
+        const next = source[index + 1];
+        if (char === '"' && inQuotes && next === '"') {
+          cell += '"';
+          index += 1;
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === delimiter && !inQuotes) {
+          row.push(cell);
+          cell = "";
+        } else if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") index += 1;
+          row.push(cell);
+          rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
+      row.push(cell);
+      rows.push(row);
+      return rows.filter((items) => items.some((item) => item.trim()));
+    }
+
+    function readUint16(bytes, offset) {
+      return bytes[offset] | (bytes[offset + 1] << 8);
+    }
+
+    function readUint32(bytes, offset) {
+      return (bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16) | (bytes[offset + 3] << 24)) >>> 0;
+    }
+
+    async function inflateRaw(bytes) {
+      if (!("DecompressionStream" in window)) {
+        throw new Error("이 브라우저는 XLSX 압축 해제를 지원하지 않습니다. 엑셀에서 CSV로 저장해 올려 주세요.");
+      }
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+      return new Uint8Array(await new Response(stream).arrayBuffer());
+    }
+
+    async function readZipEntries(arrayBuffer) {
+      const bytes = new Uint8Array(arrayBuffer);
+      let eocd = -1;
+      for (let index = bytes.length - 22; index >= Math.max(0, bytes.length - 66000); index -= 1) {
+        if (readUint32(bytes, index) === 0x06054b50) {
+          eocd = index;
+          break;
+        }
+      }
+      if (eocd < 0) throw new Error("XLSX 구조를 읽을 수 없습니다.");
+
+      const entryCount = readUint16(bytes, eocd + 10);
+      let cursor = readUint32(bytes, eocd + 16);
+      const decoder = new TextDecoder("utf-8");
+      const entries = {};
+
+      for (let index = 0; index < entryCount; index += 1) {
+        if (readUint32(bytes, cursor) !== 0x02014b50) break;
+        const method = readUint16(bytes, cursor + 10);
+        const compressedSize = readUint32(bytes, cursor + 20);
+        const nameLength = readUint16(bytes, cursor + 28);
+        const extraLength = readUint16(bytes, cursor + 30);
+        const commentLength = readUint16(bytes, cursor + 32);
+        const localOffset = readUint32(bytes, cursor + 42);
+        const name = decoder.decode(bytes.slice(cursor + 46, cursor + 46 + nameLength));
+        const localNameLength = readUint16(bytes, localOffset + 26);
+        const localExtraLength = readUint16(bytes, localOffset + 28);
+        const dataStart = localOffset + 30 + localNameLength + localExtraLength;
+        const compressed = bytes.slice(dataStart, dataStart + compressedSize);
+        let content;
+        if (method === 0) {
+          content = compressed;
+        } else if (method === 8) {
+          content = await inflateRaw(compressed);
+        } else {
+          content = new Uint8Array();
+        }
+        entries[name] = content;
+        cursor += 46 + nameLength + extraLength + commentLength;
+      }
+      return entries;
+    }
+
+    function xmlText(value) {
+      return String(value || "")
+        .replaceAll("&lt;", "<")
+        .replaceAll("&gt;", ">")
+        .replaceAll("&amp;", "&")
+        .replaceAll("&quot;", '"')
+        .replaceAll("&apos;", "'");
+    }
+
+    function columnIndex(ref) {
+      const letters = String(ref || "").replace(/[0-9]/g, "");
+      let total = 0;
+      for (const letter of letters) total = total * 26 + letter.charCodeAt(0) - 64;
+      return total - 1;
+    }
+
+    function parseSharedStrings(xml) {
+      return [...String(xml || "").matchAll(/<si[^>]*>([\s\S]*?)<\/si>/g)].map((match) => {
+        return [...match[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map((item) => xmlText(item[1])).join("");
+      });
+    }
+
+    function parseWorksheetRows(xml, sharedStrings = []) {
+      const rows = [];
+      for (const rowMatch of String(xml || "").matchAll(/<row[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g)) {
+        const row = [];
+        for (const cellMatch of rowMatch[2].matchAll(/<c([^>]*)>([\s\S]*?)<\/c>/g)) {
+          const attrs = cellMatch[1];
+          const refMatch = attrs.match(/r="([A-Z]+)\d+"/);
+          if (!refMatch) continue;
+          const typeMatch = attrs.match(/t="([^"]+)"/);
+          const idx = columnIndex(refMatch[1]);
+          const type = typeMatch ? typeMatch[1] : "";
+          const body = cellMatch[2];
+          const textMatch = body.match(/<t[^>]*>([\s\S]*?)<\/t>/);
+          const valueMatch = body.match(/<v>([\s\S]*?)<\/v>/);
+          let value = "";
+          if (type === "s" && valueMatch) value = sharedStrings[Number(valueMatch[1])] || "";
+          else if (textMatch) value = xmlText(textMatch[1]);
+          else if (valueMatch) value = xmlText(valueMatch[1]);
+          row[idx] = value;
+        }
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function rowsToDelimited(rows) {
+      return rows.map((row) => row.map((cell) => String(cell || "").includes("\t") ? String(cell).replaceAll("\t", " ") : String(cell || "")).join("\t")).join("\n");
+    }
+
+    async function readXlsxRows(file) {
+      const entries = await readZipEntries(await file.arrayBuffer());
+      const decoder = new TextDecoder("utf-8");
+      const sharedStringsXml = entries["xl/sharedStrings.xml"] ? decoder.decode(entries["xl/sharedStrings.xml"]) : "";
+      const sharedStrings = parseSharedStrings(sharedStringsXml);
+      const sheetName = Object.keys(entries).find((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name));
+      if (!sheetName) throw new Error("엑셀 시트를 찾을 수 없습니다.");
+      const sheetXml = decoder.decode(entries[sheetName]);
+      return parseWorksheetRows(sheetXml, sharedStrings);
+    }
+
+    function findCell(row, headers, names) {
+      const normalized = headers.map((header) => header.replace(/\s+/g, "").toLowerCase());
+      for (const name of names) {
+        const index = normalized.indexOf(name.replace(/\s+/g, "").toLowerCase());
+        if (index >= 0) return row[index] || "";
+      }
+      return "";
+    }
+
+    function rowsToBatch(text) {
+      const rows = parseDelimited(text);
+      if (rows.length < 2) return [];
+      const headers = rows[0].map((header) => header.trim());
+      return rows.slice(1).map((row) => {
+        const name = findCell(row, headers, ["성명", "학생", "학생표시", "이름", "student"]);
+        const classNumber = findCell(row, headers, ["반/번호", "반번호", "번호"]);
+        const student = [classNumber, name].filter(Boolean).join(" ");
+        const gradeLevel = findCell(row, headers, ["학교급", "중고", "급", "grade"]) || document.querySelector("#gradeLevel").value;
+        const subjectName = findCell(row, headers, ["과목", "과목명", "subject"]) || document.querySelector("#subjectName").value;
+        const unitName = findCell(row, headers, ["단원", "수업주제", "주제", "unit"]) || document.querySelector("#unitName").value;
+        const activityText = findCell(row, headers, ["활동", "수업활동", "activity"]);
+        const strengthText = findCell(row, headers, ["강점", "학생강점", "strength"]);
+        const evidence = findCell(row, headers, ["관찰메모", "관찰", "메모", "근거", "세부능력및특기사항", "세부능력 및 특기사항", "evidence"]) || document.querySelector("#evidence").value.trim();
+        const toneMode = normalizeTone(findCell(row, headers, ["문체", "tone"]) || document.querySelector("#toneMode").value);
+        const lengthMode = normalizeLength(findCell(row, headers, ["분량", "length"]) || document.querySelector("#lengthMode").value);
+        const focusType = normalizeFocus(findCell(row, headers, ["유형", "학생유형", "초점", "focus"]));
+        const intensity = normalizeIntensity(findCell(row, headers, ["강도", "수행강도", "수준", "intensity"]));
+        return {
+          originalRow: row,
+          headers,
+          student,
+          gradeLevel: gradeLevel.includes("고") ? "고등학교" : "중학교",
+          subjectName,
+          unitName,
+          activities: splitList(activityText, activityMap).length ? splitList(activityText, activityMap) : selectedValues("activity"),
+          strengths: splitList(strengthText, strengthMap).length ? splitList(strengthText, strengthMap) : selectedValues("strength"),
+          evidence,
+          toneMode,
+          lengthMode,
+          focusType,
+          intensity
+        };
+      }).filter((item) => item.student || item.evidence);
+    }
+
+    function renderBatchResults() {
+      batchCount.textContent = `${batchGenerated.length}명`;
+      if (!batchGenerated.length) {
+        batchResults.innerHTML = '<div class="empty">CSV 파일을 올리거나 엑셀 표를 붙여넣으면 학생별 세특 초안이 한 번에 생성됩니다.</div>';
+        return;
+      }
+
+      batchResults.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>학생</th>
+                <th>유형</th>
+                <th>강도</th>
+                <th>단원</th>
+                <th>세특 초안</th>
+                <th>작업</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${batchGenerated.map((item, index) => `
+                <tr>
+                  <td>${escapeHtml(item.student || `학생 ${index + 1}`)}</td>
+                  <td>${escapeHtml(focusProfiles[item.focusType]?.label || "공통")}</td>
+                  <td>${escapeHtml(intensityLabel(item.intensity))}</td>
+                  <td>${escapeHtml(item.unitName)}</td>
+                  <td class="batch-result-text">${escapeHtml(item.text)}</td>
+                  <td>
+                    <span class="mini-actions">
+                      <button class="mini" type="button" data-batch-copy="${index}">복사</button>
+                      <button class="mini" type="button" data-batch-save="${index}">저장</button>
+                    </span>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function intensityLabel(value) {
+      const labels = {
+        basic: "기본 참여",
+        stable: "안정적 수행",
+        growth: "성장 관찰",
+        strong: "뚜렷한 강점",
+        support: "보완 필요"
+      };
+      return labels[value] || "안정적 수행";
+    }
+
+    function getBatchOptions() {
+      return {
+        diversityMode: document.querySelector("#diversityMode").value,
+        focusMode: document.querySelector("#batchFocusMode").value,
+        intensityMode: document.querySelector("#batchIntensityMode").value,
+        autoRotate: document.querySelector("#autoRotateOptions").checked,
+        unitMode: document.querySelector("#batchUnitMode").value,
+        selectedUnits: selectedBatchUnits()
+      };
+    }
+
+    function diversifyRow(row, index, options) {
+      const focusType = row.focusType || (options.focusMode === "auto" ? pickByIndex(focusOrder, index) : options.focusMode);
+      const intensityCycle = ["stable", "growth", "basic", "strong", "stable", "support"];
+      const intensity = row.intensity || (options.autoRotate ? pickByIndex(intensityCycle, index + 1) : options.intensityMode);
+      const focus = focusProfiles[focusType] || focusProfiles.understanding;
+      const activityLimit = options.diversityMode === "high" ? 2 : 1;
+      const strengthLimit = options.diversityMode === "high" ? 2 : 1;
+      const rotatedActivities = options.autoRotate
+        ? [pickByIndex(focus.activities, index), ...row.activities].slice(0, activityLimit + 1)
+        : row.activities;
+      const rotatedStrengths = options.autoRotate
+        ? [pickByIndex(focus.strengths, index + 1), ...row.strengths].slice(0, strengthLimit + 1)
+        : row.strengths;
+      const units = options.selectedUnits && options.selectedUnits.length ? options.selectedUnits : [row.unitName || unitSelect.value];
+      const unitIndex = options.unitMode === "random" ? seededIndex(row.student || row.studentId || row.originalRow?.join("-") || "", index, units.length) : index % units.length;
+      return {
+        ...row,
+        studentIndex: index,
+        focusType,
+        intensity,
+        diversityMode: options.diversityMode,
+        unitName: units[unitIndex] || row.unitName,
+        activities: uniqueMerge(rotatedActivities, row.activities),
+        strengths: uniqueMerge(rotatedStrengths, row.strengths)
+      };
+    }
+
+    function generateBatch() {
+      const text = batchPaste.value.trim() || loadedBatchText.trim();
+      const rows = rowsToBatch(text);
+      const options = getBatchOptions();
+      batchGenerated = rows.map((row, index) => {
+        const diversified = diversifyRow(row, index, options);
+        return {
+          ...diversified,
+          text: makeSentence(diversified)
+        };
+      });
+      const report = analyzeSimilarity(batchGenerated);
+      renderSimilarityReport(report, false);
+      renderBatchResults();
+      showToast(batchGenerated.length ? `${batchGenerated.length}명 초안을 만들었습니다` : "읽을 수 있는 행이 없습니다");
+    }
+
+    function tokenize(text) {
+      return String(text || "")
+        .replace(/[^\w가-힣\s]/g, " ")
+        .split(/\s+/)
+        .filter((word) => word.length >= 2 && !["수업", "활동", "학습", "내용", "주제", "과정", "모습"].includes(word));
+    }
+
+    function jaccard(a, b) {
+      const setA = new Set(tokenize(a));
+      const setB = new Set(tokenize(b));
+      const intersection = [...setA].filter((word) => setB.has(word)).length;
+      const union = new Set([...setA, ...setB]).size || 1;
+      return intersection / union;
+    }
+
+    function endingKey(text) {
+      const sentences = String(text || "").split(".").map((item) => item.trim()).filter(Boolean);
+      return sentences.length ? sentences[sentences.length - 1] : "";
+    }
+
+    function analyzeSimilarity(items) {
+      const pairs = [];
+      const endingCounts = {};
+      items.forEach((item) => {
+        const key = endingKey(item.text);
+        if (key) endingCounts[key] = (endingCounts[key] || 0) + 1;
+      });
+      for (let i = 0; i < items.length; i += 1) {
+        for (let j = i + 1; j < items.length; j += 1) {
+          const score = jaccard(items[i].text, items[j].text);
+          if (score >= 0.52) {
+            pairs.push({
+              score,
+              a: items[i].student || `학생 ${i + 1}`,
+              b: items[j].student || `학생 ${j + 1}`
+            });
+          }
+        }
+      }
+      const repeatedEndings = Object.entries(endingCounts)
+        .filter(([, count]) => count >= 3)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+      return { pairs: pairs.sort((a, b) => b.score - a.score).slice(0, 8), repeatedEndings };
+    }
+
+    function renderSimilarityReport(report, forceShow = true) {
+      const hasWarnings = report.pairs.length || report.repeatedEndings.length;
+      if (!forceShow && !hasWarnings) {
+        similarityReport.hidden = true;
+        similarityReport.innerHTML = "";
+        return;
+      }
+      similarityReport.hidden = false;
+      if (!hasWarnings) {
+        similarityReport.innerHTML = "<strong>중복 검사:</strong> 눈에 띄는 고중복 문장 쌍이나 반복 마무리가 없습니다.";
+        return;
+      }
+      const pairText = report.pairs.length
+        ? `<div><strong>비슷한 문장:</strong> ${report.pairs.map((pair) => `${escapeHtml(pair.a)}-${escapeHtml(pair.b)} ${Math.round(pair.score * 100)}%`).join(", ")}</div>`
+        : "";
+      const endingText = report.repeatedEndings.length
+        ? `<div><strong>반복 마무리:</strong> ${report.repeatedEndings.map(([ending, count]) => `${escapeHtml(ending)} (${count}건)`).join(" / ")}</div>`
+        : "";
+      similarityReport.innerHTML = `${pairText}${endingText}<div class="help-text">겹침이 크면 '겹침 방지: 높음'과 '학생별로 활동/강점 섞기'를 켠 뒤 다시 생성해 보세요.</div>`;
+    }
+
+    function showSimilarityEmptyState() {
+      similarityReport.hidden = false;
+      similarityReport.innerHTML = "<strong>중복 검사:</strong> 아직 검사할 반 전체 생성 결과가 없습니다. 엑셀/CSV를 불러온 뒤 일괄 생성을 먼저 눌러 주세요.";
+      similarityReport.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function saveBatchItems(items) {
+      if (!items.length) return;
+      const records = getRecords();
+      const next = items.map((item) => ({
+        name: item.student || "",
+        subject: item.subjectName || "종교",
+        text: item.text,
+        savedAt: new Date().toISOString()
+      }));
+      setRecords([...next, ...records].slice(0, 160));
+    }
+
+    function educationRowsFromBatch() {
+      if (!batchGenerated.length) return [];
+      const headers = batchGenerated[0].headers || [];
+      if (!headers.length) {
+        return [["학생", "과목명", "세부능력 및 특기사항"], ...batchGenerated.map((item) => [item.student || "", item.subjectName || "", item.text])];
+      }
+      const normalized = headers.map((header) => header.replace(/\s+/g, ""));
+      let setakIndex = normalized.indexOf("세부능력및특기사항");
+      const outputHeaders = [...headers];
+      if (setakIndex < 0) {
+        setakIndex = outputHeaders.length;
+        outputHeaders.push("세부능력 및 특기사항");
+      }
+      const rows = batchGenerated.map((item) => {
+        const row = [...(item.originalRow || [])];
+        while (row.length < outputHeaders.length) row.push("");
+        row[setakIndex] = item.text;
+        return row;
+      });
+      return [outputHeaders, ...rows];
+    }
+
+    function downloadCsv(filename, rows) {
+      const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      downloadBlob(filename, blob);
+    }
+
+    function downloadBlob(filename, blob) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeXml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&apos;");
+    }
+
+    function columnName(index) {
+      let name = "";
+      let current = index + 1;
+      while (current > 0) {
+        const mod = (current - 1) % 26;
+        name = String.fromCharCode(65 + mod) + name;
+        current = Math.floor((current - mod) / 26);
+      }
+      return name;
+    }
+
+    function worksheetXml(rows) {
+      const rowXml = rows.map((row, rowIndex) => {
+        const rowNumber = rowIndex + 1;
+        const cells = row.map((cell, cellIndex) => {
+          const ref = `${columnName(cellIndex)}${rowNumber}`;
+          return `<c r="${ref}" t="inlineStr"><is><t>${escapeXml(cell)}</t></is></c>`;
+        }).join("");
+        return `<row r="${rowNumber}">${cells}</row>`;
+      }).join("");
+      const lastCol = columnName(Math.max(0, (rows[0] || []).length - 1));
+      const lastRow = Math.max(1, rows.length);
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+        `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+        `<dimension ref="A1:${lastCol}${lastRow}"/>` +
+        `<sheetViews><sheetView workbookViewId="0"/></sheetViews>` +
+        `<sheetFormatPr defaultRowHeight="18"/>` +
+        `<cols><col min="1" max="8" width="18" customWidth="1"/><col min="8" max="8" width="70" customWidth="1"/></cols>` +
+        `<sheetData>${rowXml}</sheetData>` +
+        `</worksheet>`;
+    }
+
+    function makeCrcTable() {
+      const table = [];
+      for (let n = 0; n < 256; n += 1) {
+        let c = n;
+        for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        table[n] = c >>> 0;
+      }
+      return table;
+    }
+
+    const crcTable = makeCrcTable();
+
+    function crc32(bytes) {
+      let crc = 0xffffffff;
+      for (const byte of bytes) crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function dosDateTime(date = new Date()) {
+      const time = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+      const dosDate = ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+      return { time, date: dosDate };
+    }
+
+    function concatBytes(parts) {
+      const total = parts.reduce((sum, part) => sum + part.length, 0);
+      const out = new Uint8Array(total);
+      let offset = 0;
+      for (const part of parts) {
+        out.set(part, offset);
+        offset += part.length;
+      }
+      return out;
+    }
+
+    function makeStoredZip(files) {
+      const encoder = new TextEncoder();
+      const localParts = [];
+      const centralParts = [];
+      const { time, date } = dosDateTime();
+      let offset = 0;
+
+      files.forEach((file) => {
+        const nameBytes = encoder.encode(file.name);
+        const data = typeof file.content === "string" ? encoder.encode(file.content) : file.content;
+        const crc = crc32(data);
+
+        const local = new Uint8Array(30 + nameBytes.length);
+        const localView = new DataView(local.buffer);
+        localView.setUint32(0, 0x04034b50, true);
+        localView.setUint16(4, 20, true);
+        localView.setUint16(6, 0x0800, true);
+        localView.setUint16(8, 0, true);
+        localView.setUint16(10, time, true);
+        localView.setUint16(12, date, true);
+        localView.setUint32(14, crc, true);
+        localView.setUint32(18, data.length, true);
+        localView.setUint32(22, data.length, true);
+        localView.setUint16(26, nameBytes.length, true);
+        local.set(nameBytes, 30);
+        localParts.push(local, data);
+
+        const central = new Uint8Array(46 + nameBytes.length);
+        const centralView = new DataView(central.buffer);
+        centralView.setUint32(0, 0x02014b50, true);
+        centralView.setUint16(4, 20, true);
+        centralView.setUint16(6, 20, true);
+        centralView.setUint16(8, 0x0800, true);
+        centralView.setUint16(10, 0, true);
+        centralView.setUint16(12, time, true);
+        centralView.setUint16(14, date, true);
+        centralView.setUint32(16, crc, true);
+        centralView.setUint32(20, data.length, true);
+        centralView.setUint32(24, data.length, true);
+        centralView.setUint16(28, nameBytes.length, true);
+        centralView.setUint32(42, offset, true);
+        central.set(nameBytes, 46);
+        centralParts.push(central);
+
+        offset += local.length + data.length;
+      });
+
+      const centralDirectory = concatBytes(centralParts);
+      const end = new Uint8Array(22);
+      const endView = new DataView(end.buffer);
+      endView.setUint32(0, 0x06054b50, true);
+      endView.setUint16(8, files.length, true);
+      endView.setUint16(10, files.length, true);
+      endView.setUint32(12, centralDirectory.length, true);
+      endView.setUint32(16, offset, true);
+      return concatBytes([...localParts, centralDirectory, end]);
+    }
+
+    function downloadXlsx(filename, rows) {
+      const files = [
+        {
+          name: "[Content_Types].xml",
+          content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+            `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+            `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+            `<Default Extension="xml" ContentType="application/xml"/>` +
+            `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+            `<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>` +
+            `</Types>`
+        },
+        {
+          name: "_rels/.rels",
+          content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>` +
+            `</Relationships>`
+        },
+        {
+          name: "xl/workbook.xml",
+          content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+            `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+            `<sheets><sheet name="과목세특" sheetId="1" r:id="rId1"/></sheets>` +
+            `</workbook>`
+        },
+        {
+          name: "xl/_rels/workbook.xml.rels",
+          content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>` +
+            `</Relationships>`
+        },
+        {
+          name: "xl/worksheets/sheet1.xml",
+          content: worksheetXml(rows)
+        }
+      ];
+      const bytes = makeStoredZip(files);
+      downloadBlob(filename, new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      updateResult();
+    });
+
+    document.querySelector("#sampleBtn").addEventListener("click", () => {
+      document.querySelector("#studentName").value = "1학년 2반 A학생";
+      document.querySelector("#gradeLevel").value = "중학교";
+      document.querySelector("#subjectName").value = "종교";
+      document.querySelector("#unitName").value = "공동체, 이웃 사랑, 섬김";
+      document.querySelector("#toneMode").value = "community";
+      document.querySelector("#lengthMode").value = "standard";
+      document.querySelector("#evidence").value = "선한 사마리아인 본문을 학교생활의 갈등 상황과 연결해 해석하고, 모둠 토론에서 다른 친구의 의견을 정리한 뒤 후속 질문을 제시함.";
+      document.querySelectorAll("[data-group] input").forEach((item) => item.checked = false);
+      ["질문 중심 토론", "성찰 글쓰기", "타인의 의견을 경청하고 연결하는 태도", "자신의 삶과 선택을 성찰하는 힘"].forEach((value) => {
+        const target = [...document.querySelectorAll("[data-group] input")].find((item) => item.value === value);
+        if (target) target.checked = true;
+      });
+      updateResult();
+      showToast("예시를 채웠습니다");
+    });
+
+    document.querySelector("#clearBtn").addEventListener("click", () => {
+      form.reset();
+      document.querySelectorAll("[data-group] input").forEach((item) => item.checked = false);
+      resultText.textContent = "왼쪽에서 관찰 근거를 입력한 뒤 초안 만들기를 누르세요.";
+      inspectText("");
+      showToast("입력을 비웠습니다");
+    });
+
+    document.querySelector("#addUnitBtn").addEventListener("click", () => {
+      const unit = customUnitInput.value.trim();
+      if (!unit) {
+        showToast("추가할 주제를 입력해 주세요");
+        return;
+      }
+      setCustomUnits([...getCustomUnits(), unit]);
+      customUnitInput.value = "";
+      renderUnits(unit);
+      showToast("단원을 추가했습니다");
+    });
+
+    document.querySelector("#removeUnitBtn").addEventListener("click", () => {
+      const selected = unitSelect.value;
+      if (defaultUnits.includes(selected)) {
+        showToast("기본 단원은 삭제하지 않습니다");
+        return;
+      }
+      setCustomUnits(getCustomUnits().filter((unit) => unit !== selected));
+      showToast("직접 추가한 단원을 삭제했습니다");
+    });
+
+    document.querySelector("#selectAllBatchUnits").addEventListener("click", () => {
+      batchUnitChoices.querySelectorAll("input").forEach((item) => item.checked = true);
+      showToast("반 전체 주제를 모두 선택했습니다");
+    });
+
+    document.querySelector("#clearBatchUnits").addEventListener("click", () => {
+      batchUnitChoices.querySelectorAll("input").forEach((item) => item.checked = false);
+      showToast("반 전체 주제 선택을 해제했습니다");
+    });
+
+    document.querySelector("#variantBtn").addEventListener("click", () => {
+      if (resultText.textContent.includes("왼쪽에서")) {
+        updateResult();
+        showToast("초안을 만들었습니다");
+        return;
+      }
+      variantIndex += 1;
+      updateResult();
+      showToast("다른 표현으로 바꿨습니다");
+    });
+
+    document.querySelector("#copyBtn").addEventListener("click", () => {
+      copyText(resultText.textContent);
+    });
+
+    document.querySelector("#saveBtn").addEventListener("click", () => {
+      const text = resultText.textContent.trim();
+      if (!text || text.includes("왼쪽에서")) {
+        showToast("먼저 초안을 만들어 주세요");
+        return;
+      }
+      const records = getRecords();
+      records.unshift({
+        name: document.querySelector("#studentName").value.trim(),
+        subject: document.querySelector("#subjectName").value,
+        text,
+        savedAt: new Date().toISOString()
+      });
+      setRecords(records.slice(0, 80));
+      showToast("저장했습니다");
+    });
+
+    savedList.addEventListener("click", (event) => {
+      const copyIndex = event.target.dataset.copy;
+      const deleteIndex = event.target.dataset.delete;
+      const records = getRecords();
+      if (copyIndex !== undefined) {
+        copyText(records[Number(copyIndex)].text);
+      }
+      if (deleteIndex !== undefined) {
+        records.splice(Number(deleteIndex), 1);
+        setRecords(records);
+        showToast("삭제했습니다");
+      }
+    });
+
+    batchFile.addEventListener("change", async () => {
+      const loadToken = batchLoadToken + 1;
+      batchLoadToken = loadToken;
+      const file = batchFile.files[0];
+      if (!file) return;
+      if (file.name.toLowerCase().endsWith(".xlsx")) {
+        try {
+          const rows = await readXlsxRows(file);
+          if (loadToken !== batchLoadToken) return;
+          loadedBatchText = rowsToDelimited(rows);
+          batchPaste.value = loadedBatchText;
+          showToast(`엑셀 ${Math.max(0, rows.length - 1)}행을 불러왔습니다`);
+        } catch (error) {
+          if (loadToken !== batchLoadToken) return;
+          showToast(error.message || "엑셀을 읽지 못했습니다");
+        }
+        return;
+      }
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        if (loadToken !== batchLoadToken) return;
+        loadedBatchText = String(reader.result || "");
+        batchPaste.value = loadedBatchText;
+        showToast("CSV를 불러왔습니다");
+      });
+      reader.readAsText(file, "utf-8");
+    });
+
+    document.querySelector("#batchGenerateBtn").addEventListener("click", generateBatch);
+
+    document.querySelector("#batchSimilarityBtn").addEventListener("click", () => {
+      if (!batchGenerated.length) {
+        showSimilarityEmptyState();
+        showToast("일괄 생성 결과가 필요합니다");
+        return;
+      }
+      renderSimilarityReport(analyzeSimilarity(batchGenerated), true);
+      similarityReport.scrollIntoView({ behavior: "smooth", block: "center" });
+      showToast("중복 검사를 마쳤습니다");
+    });
+
+    document.querySelector("#batchExportEduBtn").addEventListener("click", () => {
+      if (!batchGenerated.length) {
+        showToast("먼저 일괄 생성을 해 주세요");
+        return;
+      }
+      downloadXlsx("religion-setak-education-format-results.xlsx", educationRowsFromBatch());
+      showToast("세특이 채워진 엑셀 파일을 만들었습니다");
+    });
+
+    function clearBatchWork() {
+      batchLoadToken += 1;
+      try {
+        batchFile.value = "";
+      } catch (error) {
+        batchFile.type = "text";
+        batchFile.type = "file";
+      }
+      batchPaste.value = "";
+      loadedBatchText = "";
+      batchGenerated = [];
+      similarityReport.hidden = true;
+      similarityReport.innerHTML = "";
+      setRecords([]);
+      renderBatchResults();
+    }
+
+    document.querySelector("#batchClearBtn").addEventListener("click", () => {
+      clearBatchWork();
+      showToast("일괄 입력과 저장 메모를 비웠습니다");
+    });
+
+    batchResults.addEventListener("click", (event) => {
+      const copyIndex = event.target.dataset.batchCopy;
+      const saveIndex = event.target.dataset.batchSave;
+      if (copyIndex !== undefined) {
+        copyText(batchGenerated[Number(copyIndex)].text);
+      }
+      if (saveIndex !== undefined) {
+        saveBatchItems([batchGenerated[Number(saveIndex)]]);
+        showToast("저장했습니다");
+      }
+    });
+
+    document.querySelector("#exportBtn").addEventListener("click", () => {
+      const records = getRecords();
+      if (!records.length) {
+        showToast("내보낼 메모가 없습니다");
+        return;
+      }
+      const rows = [["학생 표시", "과목", "세특 초안", "저장 시각"], ...records.map((record) => [
+        record.name || "",
+        record.subject || "",
+        record.text || "",
+        record.savedAt || ""
+      ])];
+      downloadCsv("religion-setak-records.csv", rows);
+      showToast("CSV를 만들었습니다");
+    });
+
+    renderUnits();
+    renderBatchResults();
+    renderRecords();
+    inspectText("");
+  </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+.agents/
+.codex/
+work/
+outputs/
+*.log
