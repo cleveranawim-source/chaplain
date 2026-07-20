@@ -1171,21 +1171,83 @@
         "이해에 시간이 걸리는 부분이 있으나 포기하지 않고 되묻는 태도가 배움의 바탕이 됨."
       ]
     };
-    const structureOpeners = [
-      "수업 활동에서",
-      "학습 과정 전반에서",
-      "주제 탐구 과정에서",
-      "단원 학습 과정에서",
-      "모둠 활동과 개인 성찰 과정에서",
-      "본문 해석과 나눔 활동 과정에서",
-      "교과 활동 전반에서",
-      "한 학기 동안의 수업 활동에서",
-      "주제와 관련된 탐구 활동에서",
-      "수업 중 이루어진 다양한 활동에서"
+    const unitNarratives = {
+      "인간 존재와 삶의 의미 탐구": [
+        "인간 존재와 삶의 의미를 묻는 물음을 따라가는 수업에서",
+        "삶의 의미와 인간 존재에 대해 생각해 보는 학습 과정에서"
+      ],
+      "경전 본문 해석과 삶의 적용": [
+        "경전 본문을 읽고 그 의미를 삶에 비추어 보는 수업에서",
+        "본문의 뜻을 헤아려 생활에 적용해 보는 학습 과정에서"
+      ],
+      "생명 존중과 생태 감수성": [
+        "생명의 소중함과 생태적 감수성을 다루는 수업에서",
+        "생명 존중의 가치를 자연과 환경 문제로 넓혀 보는 학습 과정에서"
+      ],
+      "사랑과 용서, 화해의 가치": [
+        "사랑과 용서, 화해의 의미를 살펴보는 수업에서",
+        "관계 속 용서와 화해의 가치를 생각해 보는 학습 과정에서"
+      ],
+      "공동체, 이웃 사랑, 섬김": [
+        "이웃 사랑과 섬김, 공동체의 의미를 배우는 수업에서",
+        "더불어 사는 공동체의 가치를 다루는 학습 과정에서"
+      ],
+      "종교 윤리와 현대 사회 쟁점": [
+        "종교 윤리의 눈으로 현대 사회의 쟁점을 살펴보는 수업에서",
+        "윤리적 관점에서 사회 문제를 검토해 보는 학습 과정에서"
+      ],
+      "세계 종교 이해와 상호 존중": [
+        "세계 여러 종교의 전통을 이해하고 존중을 배우는 수업에서",
+        "다양한 종교 문화를 비교하며 공존을 생각해 보는 학습 과정에서"
+      ],
+      "종교와 문화, 역사 이해": [
+        "종교가 문화와 역사에 남긴 흔적을 살펴보는 수업에서",
+        "문화와 역사 속 종교의 의미를 탐구하는 학습 과정에서"
+      ],
+      "진로, 소명, 책임 있는 선택": [
+        "진로와 소명, 책임 있는 선택을 생각해 보는 수업에서",
+        "일의 의미와 자신의 길을 탐색해 보는 학습 과정에서"
+      ],
+      "청소년기 정체성과 자기 발견": [
+        "자신이 누구인지 묻고 스스로를 발견해 가는 수업에서",
+        "청소년기 정체성에 대해 생각해 보는 학습 과정에서"
+      ],
+      "자기 성장과 자아실현": [
+        "자기 성장과 자아실현의 의미를 다루는 수업에서",
+        "자신의 가능성과 성장을 생각해 보는 학습 과정에서"
+      ],
+      "회복탄력성과 마음 돌봄": [
+        "마음을 돌보고 회복하는 힘을 배우는 수업에서",
+        "어려움을 이겨 내는 내면의 힘을 다루는 학습 과정에서"
+      ],
+      "감정 이해와 공감적 관계": [
+        "감정을 이해하고 공감을 연습하는 수업에서",
+        "감정과 관계 맺기를 다루는 학습 과정에서"
+      ],
+      "감사와 성찰의 생활화": [
+        "감사와 성찰을 생활 속에서 실천해 보는 수업에서",
+        "일상의 감사를 발견하고 돌아보는 학습 과정에서"
+      ]
+    };
+    function unitNarrativeFor(unitName, seed) {
+      const pool = unitNarratives[unitName];
+      if (!pool || !pool.length) return `${unitName}${josa(unitName, "을", "를")} 주제로 한 수업에서`;
+      return pool[Math.abs(seed) % pool.length];
+    }
+    const engagementLines = [
+      "자신의 생각을 정리하고 표현하는 과정에 성실히 참여함.",
+      "배움의 과정에 꾸준히 참여하며 자신의 관점을 세워 감.",
+      "학습 활동에 적극적으로 참여하며 생각의 폭을 넓힘.",
+      "주어진 활동에 진지하게 임하며 배움을 이어 감."
     ];
-    const topicConnectors = ["를 바탕으로", "와 관련하여", "를 중심으로", "의 흐름 속에서", "를 다루면서", "와 연계하여"];
+    const batchMemoFallbacks = [
+      "수업 중 나눈 이야기와 배운 내용을 자신의 경험과 연결 지어 이해함.",
+      "배운 내용에 대한 자신의 생각을 글과 말로 정리하는 모습이 나타남.",
+      "수업에서 다룬 내용을 일상의 경험에 비추어 보며 의미를 찾음.",
+      "배움의 과정에서 느낀 점을 자신의 언어로 표현하려는 노력이 보임."
+    ];
     const closerHeads = [
-      "본문과 자료의 관점을",
+      "수업에서 만난 여러 관점을",
       "수업에서 다룬 가치를",
       "학습한 내용을",
       "주제 탐구의 결과를",
@@ -1269,13 +1331,6 @@
         academic: (s) => `${s}${josa(s, "을", "를")} 활용해 자료를 비교하고 분석하며 주장의 타당성을 검토함.`,
         community: (s) => `${s}${josa(s, "을", "를")} 바탕으로 서로 다른 처지의 친구를 이해하고 배려하는 모습을 보임.`
       }
-    ];
-    const variants = [
-      { opener: "수업 활동에서", connector: "를 바탕으로" },
-      { opener: "학습 과정 전반에서", connector: "와 관련하여" },
-      { opener: "주제 탐구 과정에서", connector: "를 중심으로" },
-      { opener: "교과 활동 전반에서", connector: "와 연계하여" },
-      { opener: "단원 학습 과정에서", connector: "의 흐름 속에서" }
     ];
     let variantIndex = 0;
     let loadedBatchText = "";
@@ -1394,14 +1449,7 @@
       const focus = focusKey ? focusProfiles[focusKey] : null;
       const baseActivities = data.activities || [];
       const baseStrengths = data.strengths || [];
-      const activities = (baseActivities.length ? baseActivities : uniqueMerge(baseActivities, !isBatch || !focus ? [] : focus.activities)).slice(0, diversityMode === "high" ? 3 : 2);
-      const strengths = (baseStrengths.length ? baseStrengths : uniqueMerge(baseStrengths, !isBatch || !focus ? [] : focus.strengths)).slice(0, diversityMode === "high" ? 3 : 2);
-      const variant = !isBatch ? variants[variantIndex % variants.length] : {
-        opener: pickByIndex(structureOpeners, studentIndex * 3 + 1, "수업 활동에서"),
-        connector: pickByIndex(topicConnectors, seededIndex(`${seedName}-con`, studentIndex, 997), "를 바탕으로")
-      };
-
-      const activityText = joinNatural(activities, "수업 활동");
+      const strengths = baseStrengths.slice(0, 2);
       const strengthText = joinNatural(strengths, "배운 내용을 정리하고 표현하는 태도");
       const levelNoun = gradeLevel === "고등학교" ? "개념적 이해와 비판적 사고" : "이해와 성찰";
       const focusLine = focus
@@ -1411,30 +1459,45 @@
       const intensityLine = pickByIndex(intensityPool, isBatch ? seededIndex(`${seedName}-in`, studentIndex, 997) : variantIndex, intensityPool[0]);
       const themeLine = themeLineFor(unitName, isBatch ? seededIndex(`${seedName}-th`, studentIndex, 997) : variantIndex);
       const closer = composeCloser(isBatch ? studentIndex * 7 + (diversityMode === "high" ? 13 : 0) : variantIndex * 7);
-
       const toneSet = pickByIndex(individualToneSets, isBatch ? studentIndex * 3 : variantIndex, individualToneSets[0]);
       const toneLine = (toneSet[toneMode] || toneSet.balanced)(strengthText);
       const coreLine = focusLine || toneLine;
+      const unitOpening = unitNarrativeFor(unitName, isBatch ? seededIndex(`${seedName}-un`, studentIndex, 997) : variantIndex);
+      const memoText = evidence ? `관찰 근거로는 ${evidence.replace(/\s+/g, " ")}` : "";
+
+      if (isBatch) {
+        const engagement = pickByIndex(engagementLines, seededIndex(`${seedName}-eng`, studentIndex, 997), engagementLines[0]);
+        const fileActivities = (data.fileActivities || []).slice(0, 2);
+        const memoLine = memoText || pickByIndex(batchMemoFallbacks, seededIndex(`${seedName}-memo`, studentIndex, 997), batchMemoFallbacks[0]);
+        const parts = [`${unitOpening} ${engagement}`, memoLine];
+        if (fileActivities.length) parts.push(`특히 ${joinNatural(fileActivities, "수업 활동")}에 참여할 때 몰입하는 모습이 돋보임.`);
+        if (themeLine) parts.push(themeLine);
+        parts.push(coreLine, intensityLine);
+        let text = parts.join(" ");
+        if (focusLine && `${text} ${closer}`.length < 340) text = `${text} ${toneLine}`;
+        text = `${text} ${closer}`;
+        if (text.length < 380) text = `${text} ${composeExpectation(studentIndex * 3)}`;
+        return text;
+      }
+
+      const activities = baseActivities.slice(0, 2);
+      const activityText = joinNatural(activities, "수업 활동");
+      const memoLine = memoText || memoFallbacks[Math.abs(variantIndex) % memoFallbacks.length](activityText);
       const themePart = themeLine ? `${themeLine} ` : "";
-
-      const memoLine = evidence
-        ? `관찰 근거로는 ${evidence.replace(/\s+/g, " ")}`
-        : memoFallbacks[(isBatch ? seededIndex(`${seedName}-memo`, studentIndex, 997) : variantIndex) % memoFallbacks.length](activityText);
-
       const widenVerbs = ["넓힘", "깊게 함", "키워 감"];
-      const widenLine = `${levelNoun}${josa(levelNoun, "을", "를")} ${pickByIndex(widenVerbs, isBatch ? seededIndex(`${seedName}-wid`, studentIndex, 997) : variantIndex, "넓힘")}`;
+      const widenLine = `${levelNoun}${josa(levelNoun, "을", "를")} ${pickByIndex(widenVerbs, variantIndex, "넓힘")}`;
 
       if (lengthMode === "short") {
-        return `'${unitName}' 학습에서 ${activityText}에 참여하며 ${widenLine}. ${coreLine} ${memoLine}`;
+        return `${unitOpening} ${activityText}에 참여하며 ${widenLine}. ${coreLine} ${memoLine}`;
       }
 
       if (lengthMode === "long") {
-        const valueLine = composeCloser(isBatch ? studentIndex * 11 + 3 : variantIndex * 11 + 3);
-        const expectationLine = composeExpectation(isBatch ? studentIndex * 3 : variantIndex * 3);
-        return `${variant.opener} '${unitName}' 주제${variant.connector} ${activityText}에 성실히 참여함. ${memoLine} ${themePart}${coreLine} ${intensityLine} ${valueLine} ${expectationLine}`;
+        const valueLine = composeCloser(variantIndex * 11 + 3);
+        const expectationLine = composeExpectation(variantIndex * 3);
+        return `${unitOpening} ${activityText}에 성실히 참여함. ${memoLine} ${themePart}${coreLine} ${intensityLine} ${valueLine} ${expectationLine}`;
       }
 
-      return `${variant.opener} '${unitName}' 주제${variant.connector} ${activityText}에 참여하며 ${widenLine}. ${memoLine} ${themePart}${coreLine} ${intensityLine} ${closer}`;
+      return `${unitOpening} ${activityText}에 참여하며 ${widenLine}. ${memoLine} ${themePart}${coreLine} ${intensityLine} ${closer}`;
     }
 
     function inspectText(text) {
@@ -1763,6 +1826,7 @@
           subjectName,
           unitName,
           activities: splitList(activityText, activityMap).length ? splitList(activityText, activityMap) : selectedValues("activity"),
+          fileActivities: splitList(activityText, activityMap),
           strengths: splitList(strengthText, strengthMap).length ? splitList(strengthText, strengthMap) : selectedValues("strength"),
           evidence,
           toneMode,
