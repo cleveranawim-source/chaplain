@@ -849,7 +849,7 @@
               <div>
                 <label for="batchFile">엑셀/CSV 파일 업로드</label>
                 <input class="file-input" id="batchFile" type="file" accept=".xlsx,.csv,.txt" />
-                <p class="help-text">교육청 과목세특 엑셀 양식(.xlsx)을 바로 올릴 수 있습니다. CSV나 엑셀 표 붙여넣기도 계속 지원합니다.</p>
+                <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). CSV나 붙여넣기도 지원합니다.</p>
               </div>
               <div>
                 <label for="batchPaste">엑셀 표 붙여넣기</label>
@@ -1279,6 +1279,8 @@
     ];
     let variantIndex = 0;
     let loadedBatchText = "";
+    let loadedXlsxBytes = null;
+    let loadedXlsxName = "";
     let batchGenerated = [];
     let batchLoadToken = 0;
 
@@ -1715,8 +1717,8 @@
       return rows.map((row) => row.map((cell) => String(cell || "").includes("\t") ? String(cell).replaceAll("\t", " ") : String(cell || "")).join("\t")).join("\n");
     }
 
-    async function readXlsxRows(file) {
-      const entries = await readZipEntries(await file.arrayBuffer());
+    async function readXlsxRows(arrayBuffer) {
+      const entries = await readZipEntries(arrayBuffer);
       const decoder = new TextDecoder("utf-8");
       const sharedStringsXml = entries["xl/sharedStrings.xml"] ? decoder.decode(entries["xl/sharedStrings.xml"]) : "";
       const sharedStrings = parseSharedStrings(sharedStringsXml);
@@ -1984,6 +1986,72 @@
         return row;
       });
       return [outputHeaders, ...rows];
+    }
+
+    function headerKey(value) {
+      return String(value || "").replace(/\s+/g, "");
+    }
+
+    function studentKeyFrom(values, idIndex, numIndex, nameIndex) {
+      const id = idIndex >= 0 ? String(values[idIndex] || "").trim() : "";
+      if (id) return `id:${id}`;
+      const num = numIndex >= 0 ? String(values[numIndex] || "").trim() : "";
+      const name = nameIndex >= 0 ? String(values[nameIndex] || "").trim() : "";
+      return num || name ? `nm:${num}|${name}` : "";
+    }
+
+    async function patchOriginalXlsx() {
+      const entries = await readZipEntries(loadedXlsxBytes);
+      const decoder = new TextDecoder("utf-8");
+      const sheetName = Object.keys(entries).find((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name));
+      if (!sheetName) throw new Error("원본에서 엑셀 시트를 찾을 수 없습니다.");
+      const sharedStrings = parseSharedStrings(entries["xl/sharedStrings.xml"] ? decoder.decode(entries["xl/sharedStrings.xml"]) : "");
+      let sheetXml = decoder.decode(entries[sheetName]);
+      const rowsParsed = parseWorksheetRows(sheetXml, sharedStrings);
+
+      const headerRowIndex = rowsParsed.findIndex((row) => row.some((cell) => headerKey(cell) === "세부능력및특기사항"));
+      if (headerRowIndex < 0) throw new Error("원본에서 세부능력 및 특기사항 열을 찾을 수 없습니다.");
+      const headerRow = rowsParsed[headerRowIndex];
+      const setakCol = headerRow.findIndex((cell) => headerKey(cell) === "세부능력및특기사항");
+      const idCol = headerRow.findIndex((cell) => headerKey(cell) === "학생개인번호");
+      const numCol = headerRow.findIndex((cell) => headerKey(cell) === "반/번호");
+      const nameCol = headerRow.findIndex((cell) => headerKey(cell) === "성명");
+
+      const textByKey = new Map();
+      batchGenerated.forEach((item) => {
+        const headers = (item.headers || []).map(headerKey);
+        const key = studentKeyFrom(item.originalRow || [], headers.indexOf("학생개인번호"), headers.indexOf("반/번호"), headers.indexOf("성명"));
+        if (key && item.text) textByKey.set(key, item.text);
+      });
+      if (!textByKey.size) throw new Error("학생을 식별할 열(학생개인번호 또는 반/번호, 성명)이 없습니다.");
+
+      const colLetter = columnName(setakCol);
+      let rowCursor = -1;
+      let patched = 0;
+      sheetXml = sheetXml.replace(/<row\b[^>]*\br="\d+"[^>]*>[\s\S]*?<\/row>/g, (rowXmlFull) => {
+        rowCursor += 1;
+        if (rowCursor <= headerRowIndex) return rowXmlFull;
+        const key = studentKeyFrom(rowsParsed[rowCursor] || [], idCol, numCol, nameCol);
+        const text = key ? textByKey.get(key) : undefined;
+        if (text === undefined) return rowXmlFull;
+        const rowNumber = (rowXmlFull.match(/<row\b[^>]*\br="(\d+)"/) || [])[1];
+        const ref = `${colLetter}${rowNumber}`;
+        const cellRegex = new RegExp(`<c([^>]*\\br="${ref}"[^>]*?)(?:/>|>[\\s\\S]*?</c>)`);
+        const existing = rowXmlFull.match(cellRegex);
+        const styleMatch = existing ? existing[1].match(/\bs="(\d+)"/) : null;
+        const styleAttr = styleMatch ? ` s="${styleMatch[1]}"` : "";
+        const newCell = `<c r="${ref}"${styleAttr} t="inlineStr"><is><t xml:space="preserve">${escapeXml(text)}</t></is></c>`;
+        patched += 1;
+        if (existing) return rowXmlFull.replace(cellRegex, () => newCell);
+        return rowXmlFull.replace(/<\/row>$/, () => `${newCell}</row>`);
+      });
+      if (!patched) throw new Error("원본과 매칭되는 학생이 없습니다.");
+
+      entries[sheetName] = new TextEncoder().encode(sheetXml);
+      const files = Object.keys(entries).map((name) => ({ name, content: entries[name] }));
+      const bytes = makeStoredZip(files);
+      downloadBlob(loadedXlsxName || "과목세특_결과.xlsx", new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+      return patched;
     }
 
     function downloadCsv(filename, rows) {
@@ -2297,8 +2365,11 @@
       if (!file) return;
       if (file.name.toLowerCase().endsWith(".xlsx")) {
         try {
-          const rows = await readXlsxRows(file);
+          const buffer = await file.arrayBuffer();
+          const rows = await readXlsxRows(buffer);
           if (loadToken !== batchLoadToken) return;
+          loadedXlsxBytes = buffer;
+          loadedXlsxName = file.name;
           loadedBatchText = rowsToDelimited(rows);
           batchPaste.value = loadedBatchText;
           showToast(`엑셀 ${Math.max(0, rows.length - 1)}행을 불러왔습니다`);
@@ -2311,6 +2382,8 @@
       const reader = new FileReader();
       reader.addEventListener("load", () => {
         if (loadToken !== batchLoadToken) return;
+        loadedXlsxBytes = null;
+        loadedXlsxName = "";
         loadedBatchText = String(reader.result || "");
         batchPaste.value = loadedBatchText;
         showToast("CSV를 불러왔습니다");
@@ -2331,13 +2404,24 @@
       showToast("중복 검사를 마쳤습니다");
     });
 
-    document.querySelector("#batchExportEduBtn").addEventListener("click", () => {
+    document.querySelector("#batchExportEduBtn").addEventListener("click", async () => {
       if (!batchGenerated.length) {
         showToast("먼저 일괄 생성을 해 주세요");
         return;
       }
+      if (loadedXlsxBytes) {
+        try {
+          const patched = await patchOriginalXlsx();
+          showToast(patched < batchGenerated.length
+            ? `원본 양식 유지, ${patched}명 반영 (${batchGenerated.length - patched}명은 원본과 매칭 안 됨)`
+            : `원본 양식을 유지한 채 ${patched}명의 세특을 채웠습니다`);
+          return;
+        } catch (error) {
+          showToast(`원본 반영 실패(${error.message}) 새 양식으로 저장합니다`);
+        }
+      }
       downloadXlsx("religion-setak-education-format-results.xlsx", educationRowsFromBatch());
-      showToast("세특이 채워진 엑셀 파일을 만들었습니다");
+      if (!loadedXlsxBytes) showToast("세특이 채워진 엑셀 파일을 만들었습니다");
     });
 
     function clearBatchWork() {
@@ -2350,6 +2434,8 @@
       }
       batchPaste.value = "";
       loadedBatchText = "";
+      loadedXlsxBytes = null;
+      loadedXlsxName = "";
       batchGenerated = [];
       similarityReport.hidden = true;
       similarityReport.innerHTML = "";
