@@ -682,7 +682,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div class="title-block">
-        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v5 · 2026-07-20</span></h1>
+        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v6 · 2026-07-20</span></h1>
         <p>중학교와 고등학교 종교 수업의 관찰 근거를 바탕으로 생활기록부 교과세부특기사항 초안을 만듭니다. 신앙의 깊이를 평가하지 않고, 수업에서 드러난 이해, 해석, 성찰, 표현, 공동체 태도를 중심으로 정리합니다.</p>
       </div>
       <aside class="privacy-note">입력 내용은 이 브라우저 안에만 저장됩니다. 학생 실명 대신 번호나 이니셜을 사용하면 더 안전합니다.</aside>
@@ -857,7 +857,7 @@
               <div>
                 <label for="batchFile">엑셀/CSV 파일 업로드</label>
                 <input class="file-input" id="batchFile" type="file" accept=".xlsx,.csv,.txt" />
-                <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). 파일의 학년 열을 읽어 학년별로 다른 서술을 만듭니다. CSV나 붙여넣기도 지원합니다.</p>
+                <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). 파일의 학년 열(1학년, 3-5, 2학년 5반 등)을 읽어 학년별로 다른 서술을 만듭니다. 읽지 못하면 왼쪽 학년 선택을 쓰고 결과 표에 기본값으로 표시합니다. CSV나 붙여넣기도 지원합니다.</p>
               </div>
               <div>
                 <label for="batchPaste">엑셀 표 붙여넣기</label>
@@ -1526,8 +1526,21 @@
       ]
     };
     function normalizeGradeYear(value) {
-      const match = String(value || "").match(/[1-3]/);
-      return match ? match[0] : "";
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      // 학년도(2026)나 반 번호(03/1)를 학년으로 잘못 읽지 않도록 형식을 좁혀 판별한다.
+      const patterns = [
+        /(?:^|[^0-9])([1-3])\s*학년/,
+        /^([1-3])$/,
+        /^[중고]\s*([1-3])$/,
+        /^([1-3])\s*[-/.]\s*\d{1,2}$/,
+        /^([1-3])\s*학[년넌]/
+      ];
+      for (const pattern of patterns) {
+        const match = raw.match(pattern);
+        if (match) return match[1];
+      }
+      return "";
     }
     const outlookLines = [
       "이러한 배움의 과정이 학습 태도와 표현 전반에 긍정적인 영향으로 이어지고 있음.",
@@ -2128,7 +2141,8 @@
         const classNumber = findCell(row, headers, ["반/번호", "반번호", "번호"]);
         const student = [classNumber, name].filter(Boolean).join(" ");
         const gradeLevel = findCell(row, headers, ["학교급", "중고", "급", "grade"]) || document.querySelector("#gradeLevel").value;
-        const gradeYear = normalizeGradeYear(findCell(row, headers, ["학년", "year"])) || document.querySelector("#gradeYear").value;
+        const gradeFromFile = normalizeGradeYear(findCell(row, headers, ["학년", "학년반", "학년/반", "학반", "학년-반", "grade"]));
+        const gradeYear = gradeFromFile || document.querySelector("#gradeYear").value;
         const subjectName = findCell(row, headers, ["과목", "과목명", "subject"]) || document.querySelector("#subjectName").value;
         const unitName = findCell(row, headers, ["단원", "수업주제", "주제", "unit"]) || document.querySelector("#unitName").value;
         const activityText = findCell(row, headers, ["활동", "수업활동", "activity"]);
@@ -2144,6 +2158,7 @@
           student,
           gradeLevel: gradeLevel.includes("고") ? "고등학교" : "중학교",
           gradeYear,
+          gradeFromFile: Boolean(gradeFromFile),
           subjectName,
           unitName,
           activities: splitList(activityText, activityMap).length ? splitList(activityText, activityMap) : selectedValues("activity"),
@@ -2183,7 +2198,7 @@
               ${batchGenerated.map((item, index) => `
                 <tr>
                   <td>${escapeHtml(item.student || `학생 ${index + 1}`)}</td>
-                  <td>${escapeHtml(normalizeGradeYear(item.gradeYear) ? `${normalizeGradeYear(item.gradeYear)}학년` : "-")}</td>
+                  <td>${escapeHtml(normalizeGradeYear(item.gradeYear) ? `${normalizeGradeYear(item.gradeYear)}학년` : "-")}${item.gradeFromFile ? "" : '<div class="help-text">기본값</div>'}</td>
                   <td>${escapeHtml(focusProfiles[item.focusType]?.label || "공통")}</td>
                   <td>${escapeHtml(intensityLabel(item.intensity))}</td>
                   <td>${escapeHtml(item.unitName)}</td>
