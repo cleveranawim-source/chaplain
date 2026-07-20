@@ -366,7 +366,7 @@
 
     .option-strip {
       display: grid;
-      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
       gap: 10px;
       margin: 14px 0 10px;
       padding: 12px;
@@ -682,7 +682,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div class="title-block">
-        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v6 · 2026-07-20</span></h1>
+        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v7 · 2026-07-20</span></h1>
         <p>중학교와 고등학교 종교 수업의 관찰 근거를 바탕으로 생활기록부 교과세부특기사항 초안을 만듭니다. 신앙의 깊이를 평가하지 않고, 수업에서 드러난 이해, 해석, 성찰, 표현, 공동체 태도를 중심으로 정리합니다.</p>
       </div>
       <aside class="privacy-note">입력 내용은 이 브라우저 안에만 저장됩니다. 학생 실명 대신 번호나 이니셜을 사용하면 더 안전합니다.</aside>
@@ -857,7 +857,7 @@
               <div>
                 <label for="batchFile">엑셀/CSV 파일 업로드</label>
                 <input class="file-input" id="batchFile" type="file" accept=".xlsx,.csv,.txt" />
-                <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). 파일의 학년 열(1학년, 3-5, 2학년 5반 등)을 읽어 학년별로 다른 서술을 만듭니다. 읽지 못하면 왼쪽 학년 선택을 쓰고 결과 표에 기본값으로 표시합니다. CSV나 붙여넣기도 지원합니다.</p>
+                <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). 파일의 학년 열(1학년, 3-5, 2학년 5반 등)을 읽어 학년별로 다른 서술을 만듭니다. 학년 열이 없으면 아래 학년 선택에서 직접 지정하세요. CSV나 붙여넣기도 지원합니다.</p>
               </div>
               <div>
                 <label for="batchPaste">엑셀 표 붙여넣기</label>
@@ -865,6 +865,15 @@
               </div>
             </div>
             <div class="option-strip">
+              <div>
+                <label for="batchGradeMode">학년</label>
+                <select id="batchGradeMode">
+                  <option value="auto">파일에서 자동 인식</option>
+                  <option value="1">모두 1학년</option>
+                  <option value="2">모두 2학년</option>
+                  <option value="3">모두 3학년</option>
+                </select>
+              </div>
               <div>
                 <label for="diversityMode">겹침 방지</label>
                 <select id="diversityMode">
@@ -2142,7 +2151,6 @@
         const student = [classNumber, name].filter(Boolean).join(" ");
         const gradeLevel = findCell(row, headers, ["학교급", "중고", "급", "grade"]) || document.querySelector("#gradeLevel").value;
         const gradeFromFile = normalizeGradeYear(findCell(row, headers, ["학년", "학년반", "학년/반", "학반", "학년-반", "grade"]));
-        const gradeYear = gradeFromFile || document.querySelector("#gradeYear").value;
         const subjectName = findCell(row, headers, ["과목", "과목명", "subject"]) || document.querySelector("#subjectName").value;
         const unitName = findCell(row, headers, ["단원", "수업주제", "주제", "unit"]) || document.querySelector("#unitName").value;
         const activityText = findCell(row, headers, ["활동", "수업활동", "activity"]);
@@ -2157,7 +2165,7 @@
           headers,
           student,
           gradeLevel: gradeLevel.includes("고") ? "고등학교" : "중학교",
-          gradeYear,
+          gradeYear: gradeFromFile,
           gradeFromFile: Boolean(gradeFromFile),
           subjectName,
           unitName,
@@ -2198,7 +2206,7 @@
               ${batchGenerated.map((item, index) => `
                 <tr>
                   <td>${escapeHtml(item.student || `학생 ${index + 1}`)}</td>
-                  <td>${escapeHtml(normalizeGradeYear(item.gradeYear) ? `${normalizeGradeYear(item.gradeYear)}학년` : "-")}${item.gradeFromFile ? "" : '<div class="help-text">기본값</div>'}</td>
+                  <td>${gradeCellHtml(item)}</td>
                   <td>${escapeHtml(focusProfiles[item.focusType]?.label || "공통")}</td>
                   <td>${escapeHtml(intensityLabel(item.intensity))}</td>
                   <td>${escapeHtml(item.unitName)}</td>
@@ -2215,6 +2223,13 @@
           </table>
         </div>
       `;
+    }
+
+    function gradeCellHtml(item) {
+      const grade = normalizeGradeYear(item.gradeYear);
+      if (!grade) return '-<div class="help-text">학년 미지정</div>';
+      const note = item.gradeSource === "forced" ? '<div class="help-text">일괄 지정</div>' : "";
+      return `${escapeHtml(grade)}학년${note}`;
     }
 
     function intensityLabel(value) {
@@ -2236,7 +2251,8 @@
         autoRotate: document.querySelector("#autoRotateOptions").checked,
         unitMode: document.querySelector("#batchUnitMode").value,
         selectedUnits: selectedBatchUnits(),
-        lengthTarget: Number(document.querySelector("#batchLengthTarget").value) || 400
+        lengthTarget: Number(document.querySelector("#batchLengthTarget").value) || 400,
+        gradeMode: document.querySelector("#batchGradeMode").value
       };
     }
 
@@ -2255,6 +2271,7 @@
         : row.strengths;
       const units = options.selectedUnits && options.selectedUnits.length ? options.selectedUnits : [row.unitName || unitSelect.value];
       const unitIndex = options.unitMode === "random" ? seededIndex(row.student || row.studentId || row.originalRow?.join("-") || "", index, units.length) : index % units.length;
+      const forcedGrade = normalizeGradeYear(options.gradeMode);
       return {
         ...row,
         studentIndex: index,
@@ -2262,6 +2279,8 @@
         intensity,
         diversityMode: options.diversityMode,
         lengthTarget: options.lengthTarget,
+        gradeYear: forcedGrade || row.gradeYear || "",
+        gradeSource: forcedGrade ? "forced" : (row.gradeFromFile ? "file" : "none"),
         unitName: units[unitIndex] || row.unitName,
         activities: uniqueMerge(rotatedActivities, row.activities),
         strengths: uniqueMerge(rotatedStrengths, row.strengths)
