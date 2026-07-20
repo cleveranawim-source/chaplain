@@ -682,7 +682,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div class="title-block">
-        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v4 · 2026-07-20</span></h1>
+        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v5 · 2026-07-20</span></h1>
         <p>중학교와 고등학교 종교 수업의 관찰 근거를 바탕으로 생활기록부 교과세부특기사항 초안을 만듭니다. 신앙의 깊이를 평가하지 않고, 수업에서 드러난 이해, 해석, 성찰, 표현, 공동체 태도를 중심으로 정리합니다.</p>
       </div>
       <aside class="privacy-note">입력 내용은 이 브라우저 안에만 저장됩니다. 학생 실명 대신 번호나 이니셜을 사용하면 더 안전합니다.</aside>
@@ -701,6 +701,14 @@
               <select id="gradeLevel">
                 <option>중학교</option>
                 <option>고등학교</option>
+              </select>
+            </div>
+            <div>
+              <label for="gradeYear">학년</label>
+              <select id="gradeYear">
+                <option value="1">1학년</option>
+                <option value="2">2학년</option>
+                <option value="3">3학년</option>
               </select>
             </div>
           </div>
@@ -849,11 +857,11 @@
               <div>
                 <label for="batchFile">엑셀/CSV 파일 업로드</label>
                 <input class="file-input" id="batchFile" type="file" accept=".xlsx,.csv,.txt" />
-                <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). CSV나 붙여넣기도 지원합니다.</p>
+                <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). 파일의 학년 열을 읽어 학년별로 다른 서술을 만듭니다. CSV나 붙여넣기도 지원합니다.</p>
               </div>
               <div>
                 <label for="batchPaste">엑셀 표 붙여넣기</label>
-                <textarea class="batch-area" id="batchPaste" placeholder="학생,학교급,과목명,단원,활동,강점,관찰메모&#10;A학생,중학교,종교,공동체 이웃 사랑,토론;글쓰기,경청;성찰,본문을 학교생활과 연결해 발표함"></textarea>
+                <textarea class="batch-area" id="batchPaste" placeholder="학생,학년,학교급,과목명,단원,활동,강점,관찰메모&#10;A학생,1,중학교,종교,공동체 이웃 사랑,토론;글쓰기,경청;성찰,본문을 학교생활과 연결해 발표함"></textarea>
               </div>
             </div>
             <div class="option-strip">
@@ -1257,6 +1265,270 @@
       "수업에서 다룬 내용을 일상의 경험에 비추어 보며 의미를 찾음.",
       "배움의 과정에서 느낀 점을 자신의 언어로 표현하려는 노력이 보임."
     ];
+    const unitGradeThemeLines = {
+      "인간 존재와 삶의 의미 탐구": {
+        "1": [
+          "인간을 물질적 조건만으로 설명하기 어렵다는 관점을 처음 접하고 호기심을 보이며 낯선 핵심 용어의 뜻을 스스로 찾아 정리함.",
+          "삶의 의미가 어디에서 오는지 함께 생각해 보는 활동에서 자기 일상의 경험을 예로 들어 배운 내용을 자기 언어로 바꾸어 이해함.",
+          "사람의 존엄이 구체적으로 무엇을 뜻하는지 사실을 확인하는 질문을 여러 차례 던지고 친구들의 설명을 끝까지 귀 기울여 들음."
+        ],
+        "2": [
+          "인간의 유한함과 관계 속에서 지는 책임을 서로 연결하여 이해하고 이를 학급 생활의 구체적 상황에 적용해 설명하는 힘이 돋보임.",
+          "삶의 목적을 성취로만 규정하는 통념에 의문을 제기하고 모둠 토론에서 또래의 반론을 들으며 자신의 견해를 한층 정교하게 다듬음.",
+          "고통과 상실의 경험이 존재의 의미를 어떻게 바꾸는지 한 걸음 더 들어간 물음을 던지고 자료를 조사해 근거를 갖춘 발표문을 완성함."
+        ],
+        "3": [
+          "인간 존재를 설명하는 종교적 관점과 과학적 관점을 견주어 각각의 전제와 한계를 비판적으로 검토한 뒤 자신의 입장을 논리적으로 세움.",
+          "여러 사상가가 제시한 삶의 의미를 표로 정리해 공통점과 차이를 밝히고 이를 자신의 진로 선택 기준과 연결하여 서술한 점이 인상적임.",
+          "한 학기의 배움을 통합적으로 정리하고 더불어 사는 삶이 존재의 의미를 묻는 물음에 어떤 답이 되는지 성찰한 바를 설득력 있게 표현함."
+        ]
+      },
+      "경전 본문 해석과 삶의 적용": {
+        "1": [
+          "낯선 시대와 문화 속에서 쓰인 글을 읽으며 등장인물이 처한 상황을 차근차근 정리하고 궁금한 점을 자주 질문함.",
+          "글에 담긴 뜻을 자신의 일상 경험에 빗대어 설명해 보며 어려운 표현의 의미를 나름의 말로 풀어내려 노력하는 모습이 나타남.",
+          "수업에서 처음 접한 용어의 뜻을 자료로 확인해 정리하고 인상 깊은 대목을 하나 골라 그 까닭을 또렷하게 발표함."
+        ],
+        "2": [
+          "서로 다른 대목에 되풀이되는 주제를 연결해 파악하고 그 뜻을 학급 생활의 구체적 상황에 적용해 설명하는 능력이 돋보임.",
+          "글이 쓰인 시대 상황과 오늘의 현실이 어떻게 다른지 따져 물으며 모둠 토론에서 친구의 해석과 자신의 해석을 견주어 다듬음.",
+          "읽은 내용을 실천 과제로 바꾸어 일주일간 시도한 뒤 그 과정에서 겪은 어려움까지 솔직하게 기록해 발표한 점이 인상적임."
+        ],
+        "3": [
+          "같은 대목을 두고 갈라지는 여러 해석의 근거를 하나씩 비교 검토한 뒤 자신이 지지하는 관점을 논리적으로 정리해 제시함.",
+          "고전 문헌의 가르침을 오늘의 사회 문제에 비추어 해석하며 그 한계와 여전히 유효한 지점을 함께 짚어내는 안목이 뛰어남.",
+          "한 해 동안 다룬 여러 글을 관통하는 가치를 스스로 종합해 정리하고 이를 진로 선택의 기준과 연결해 설득력 있게 서술함."
+        ]
+      },
+      "생명 존중과 생태 감수성": {
+        "1": [
+          "모든 살아 있는 것에 저마다의 가치가 있다는 관점을 처음 접하고 호기심을 보이며 수업에서 다룬 사례를 끝까지 따라 읽음.",
+          "훼손된 숲과 사라진 동물의 사례를 배우며 자신이 겪은 계절 변화 경험에 빗대어 이해해 보려는 모습이 나타남.",
+          "낯선 용어의 뜻을 사실 확인 질문으로 묻고 배운 내용을 자기 언어로 다시 풀어 설명하며 기초 개념을 또렷하게 정리함."
+        ],
+        "2": [
+          "기후 변화 자료와 수업에서 익힌 가치 개념을 서로 연결하여 자신의 소비 습관을 점검하는 실천 계획을 구체적으로 세움.",
+          "동물 실험과 개발 사업을 둘러싼 쟁점을 모둠에서 견주어 보며 판단 근거를 또래 의견에 비추어 다듬는 태도가 돋보임.",
+          "돌봄의 대상이 사람을 넘어 자연으로 넓어질 수 있는지 묻는 심화된 물음을 던지고 그 답을 자료에서 찾아 발표함."
+        ],
+        "3": [
+          "생태 위기를 두고 성서의 창조 이해와 과학적 설명, 경제 논리를 견주어 검토한 뒤 자신의 기준을 세워 논지를 전개함.",
+          "살아 있는 것을 도구로만 다루는 사회 구조를 비판적으로 검토하고 그 대안을 지망하는 진로 분야의 책임과 연결해 정리함.",
+          "한 학기 동안 다룬 생태 주제들을 하나의 흐름으로 종합하고 앞으로 살아갈 방향과 공동체의 역할을 스스로 짚어 제시함."
+        ]
+      },
+      "사랑과 용서, 화해의 가치": {
+        "1": [
+          "용서가 그냥 잊어버리는 것과 어떻게 다른지 궁금해하며 물었고, 수업에서 다룬 이야기 속 인물의 행동을 자기 경험에 빗대어 설명함.",
+          "다툰 뒤 먼저 말을 거는 일이 왜 어려운지 짝과 이야기하며, 화해라는 낯선 말의 뜻을 자기 나름의 표현으로 바꾸어 정리하는 모습이 보임.",
+          "사랑을 마음의 느낌으로만 여기다가 상대를 위한 행동까지 포함한다는 점을 새로 알고, 배운 내용을 자기 말로 바꾸어 친구들 앞에서 발표함."
+        ],
+        "2": [
+          "용서가 관계 회복의 출발점이 된다는 점을 학급의 갈등 사례에 적용해 설명하였고, 친구와 견해를 견주며 자신의 해석을 한층 정교하게 다듬음.",
+          "조건 없이 베푸는 사랑과 잘못에 책임을 묻는 일이 부딪히는 상황을 토론하며, 용서가 책임 면제와 같지 않음을 근거를 들어 짚어냄.",
+          "사과와 회복이 어떤 순서로 이어지는지 단계를 나누어 정리하고, 화해가 한쪽의 노력만으로 이루어지기 어려운 까닭까지 물음으로 확장함."
+        ],
+        "3": [
+          "용서를 개인의 미덕으로 보는 관점과 공동체 정의의 문제로 보는 관점을 견주어 검토한 뒤, 두 입장을 아우르는 자신의 견해를 논리적으로 세움.",
+          "역사 속 갈등이 봉합된 사례를 여러 자료로 비교해 분석하고, 피해자의 자리를 지우지 않는 화해가 가능한지 비판적으로 물음을 던짐.",
+          "타인을 너그럽게 대하고 깨진 관계를 회복하는 문제를 자신의 진로와 연결해 실천 과제로 재구성하였고, 배운 바를 삶의 기준으로 통합해 정리함."
+        ]
+      },
+      "공동체, 이웃 사랑, 섬김": {
+        "1": [
+          "이웃을 돌본다는 말의 뜻을 처음 익히며 낯선 용어를 찾아 공책에 정리하고 궁금한 점을 곧바로 물어보는 태도가 돋보임.",
+          "공동체 안에서 서로 돕는다는 것이 무엇인지 자기 반 생활의 경험에 빗대어 설명하며 기초 개념을 자기 말로 풀어냄.",
+          "남을 도운 인물이 등장하는 이야기 자료를 읽고 그 행동을 차례대로 정리한 뒤 사실을 확인하는 질문을 여러 차례 제기함."
+        ],
+        "2": [
+          "이웃을 향한 돌봄과 공동체 유지가 어떻게 맞물리는지 앞서 배운 내용과 연결해 설명하고 학급 생활에 적용할 방안을 제안함.",
+          "모둠 토의에서 또래의 서로 다른 사례 해석을 견주어 보며 자기 생각의 근거를 다듬고 정리된 관점을 발표로 옮김.",
+          "남을 돕는 행위가 의무인지 선택인지를 되물으며 배운 개념을 실제 상황에 적용해 보는 심화 질문을 던짐."
+        ],
+        "3": [
+          "타인을 돌보아야 하는 이유를 설명하는 여러 관점을 비교하고 각각의 한계를 비판적으로 검토한 뒤 자신의 기준을 근거와 함께 정리함.",
+          "공동체를 위한 봉사가 개인의 자유와 충돌하는 지점을 짚어 내고 조율 가능한 해법을 논술문으로 통합해 제시함.",
+          "타인을 돌보는 삶의 가치를 자신이 지망하는 진로와 연결해 앞으로의 실천 방향을 구체적으로 밝히며 학습을 종합함."
+        ]
+      },
+      "종교 윤리와 현대 사회 쟁점": {
+        "1": [
+          "생명과 환경을 둘러싼 오늘의 문제를 다룬 수업 자료를 관심 있게 살피고 새로 알게 된 사실을 자기 말로 정리해 기록함.",
+          "인공지능과 생명 기술이 만들어 내는 낯선 쟁점을 처음 접하고도 자신의 일상 경험에 빗대어 이해해 보려는 태도가 나타남.",
+          "수업에서 다룬 윤리 용어의 뜻과 쓰임을 사례와 함께 거듭 확인하며 무엇이 문제가 되는지 묻는 질문을 자주 던짐."
+        ],
+        "2": [
+          "환경 위기와 생명 존중을 다루는 논의를 서로 연결해 설명하고 학교와 가정에서 실천할 수 있는 사례로 옮겨 적용함.",
+          "모둠 토론에서 또래의 상반된 주장을 경청한 뒤 자신의 근거를 다듬어 재진술하며 쟁점의 초점을 좁혀 가는 모습이 나타남.",
+          "사회적 약자를 대하는 방식이 왜 윤리의 기준이 되는지 묻는 심화 질문을 제기하고 자료를 찾아 근거를 보완해 발표함."
+        ],
+        "3": [
+          "여러 종교 전통과 세속 윤리가 같은 쟁점에 내놓는 판단을 견주어 검토한 뒤 자신의 관점을 논리적으로 정립해 서술함.",
+          "찬반이 갈리는 사회 문제를 다루며 각 주장의 전제와 한계를 비판적으로 짚어내고 대안이 갖추어야 할 조건까지 통합적으로 정리함.",
+          "돌봄과 공존의 가치를 자신이 지망하는 진로 현장의 판단 기준과 연결해 앞으로의 삶의 방향까지 구체적으로 밝힘."
+        ]
+      },
+      "세계 종교 이해와 상호 존중": {
+        "1": [
+          "여러 지역에서 생겨난 종교의 기원과 기본 가르침을 낯설어하기보다 흥미롭게 받아들이며 기초 용어를 하나씩 익힘.",
+          "종교마다 다른 명절과 상징물의 뜻을 자기 주변의 익숙한 풍습에 빗대어 설명해 보며 이해하려는 모습이 나타남.",
+          "의례에서 쓰이는 복장과 음식이 무엇을 뜻하는지 사실을 확인하는 질문을 자주 던지며 배우려는 자세를 보임."
+        ],
+        "2": [
+          "여러 종교의 경전과 윤리 규범을 견주어 공통점과 차이를 정리하고 그 배경까지 연결해 이해의 폭을 넓힘.",
+          "서로 다른 종교를 가진 친구와 함께 지내는 상황을 가정해 지켜야 할 태도를 구체적 사례로 제안하며 배운 내용을 적용함.",
+          "모둠 토론에서 또래의 다른 견해를 들으며 자기 생각을 다듬고 존중이 필요한 이유를 한 걸음 더 파고드는 물음을 제기함."
+        ],
+        "3": [
+          "종교 간 갈등과 협력이 나타난 사례를 여러 관점에서 비교 검토한 뒤 근거를 갖춘 자기 견해를 정리해 발표함.",
+          "다원적 사회에서 공존이 성립하기 위한 조건을 스스로 정리하고 이를 앞으로의 진로 방향과 연결해 설명하는 힘이 돋보임.",
+          "특정 종교를 한쪽 잣대로 재단하는 서술의 한계를 비판적으로 짚어 내고 대안적 해석의 방향을 통합적으로 제시함."
+        ]
+      },
+      "종교와 문화, 역사 이해": {
+        "1": [
+          "종교가 음악과 미술, 명절 같은 생활 문화 곳곳에 스며 있음을 자료에서 확인하고 낯선 용어를 따로 정리해 두는 모습이 돋보임.",
+          "수업에서 다룬 역사 속 사건이 언제 어디서 일어났는지 사실을 확인하는 질문을 자주 던지고 배운 내용을 메모로 남김.",
+          "명절과 기념일에 담긴 유래를 자기 가정의 경험에 빗대어 설명하며 문화와 종교가 맞닿는 지점을 처음으로 그려 보는 시도가 인상적임."
+        ],
+        "2": [
+          "특정 시대의 사회 변화와 종교 제도의 흐름을 연결해 정리하고 그 영향이 오늘의 생활 관습에 남아 있음을 사례로 설명함.",
+          "모둠 토의에서 서로 다른 문화권의 전통을 견주어 보며 공통점과 차이가 생긴 까닭을 묻는 질문을 만들어 논의를 넓힘.",
+          "같은 사건이 자료마다 다르게 기록된 점을 발견하고 기록한 사람이 처한 상황과 이어 보며 그 까닭을 정리해 발표함."
+        ],
+        "3": [
+          "종교가 역사 속에서 문화를 형성한 방식과 갈등을 낳은 국면을 함께 검토해 균형 잡힌 시각으로 정리한 보고서가 우수함.",
+          "여러 학자의 해석을 비교한 뒤 근거를 따져 자신의 관점을 세우고 반대 견해까지 고려해 논지를 다듬는 과정이 치밀함.",
+          "문화와 역사를 읽어 내는 안목을 진로 탐색과 이어 다양성을 존중하는 삶의 방향을 구체적인 계획으로 밝히는 점이 성숙함."
+        ]
+      },
+      "진로, 소명, 책임 있는 선택": {
+        "1": [
+          "직업을 생계의 방편만이 아니라 삶에 주어진 사명으로 보는 관점을 처음 접하고 낯선 개념을 호기심 있게 받아들임.",
+          "장래 희망을 정하는 기준이 사람마다 다른 이유를 궁금해하며 수업 중 사실을 확인하는 질문을 여러 차례 던짐.",
+          "선택에는 결과에 대한 책임이 따른다는 점을 자신의 소소한 일상 경험에 빗대어 설명하며 기초 개념을 자기 말로 정리함."
+        ],
+        "2": [
+          "재능과 흥미, 사회적 필요가 겹치는 자리에서 진로를 찾는다는 관점을 자신의 현재 상황에 적용해 구체적으로 설명함.",
+          "모둠 토의에서 또래가 제시한 직업 선택 기준을 자신의 기준과 견주어 보며 근거가 약한 부분을 스스로 수정하는 모습이 나타남.",
+          "눈앞의 이익과 타인에 대한 배려가 부딪히는 사례를 분석하며 책임 있는 선택의 조건이 무엇인지 심화된 물음을 제기함."
+        ],
+        "3": [
+          "일의 의미를 개인의 성취로 보는 시각과 공동체에 대한 기여로 보는 시각을 견주어 검토한 뒤 자신의 진로관을 세워 발표함.",
+          "직업 세계의 변화 속에서 무엇을 끝까지 지킬 것인지 스스로 질문하며 배운 내용을 자신의 진로 계획과 통합적으로 정리함.",
+          "책임 있는 선택을 다룬 여러 관점의 한계를 비판적으로 짚어 내고 자신이 감당할 몫을 구체적으로 밝히는 균형 잡힌 사고가 돋보임."
+        ]
+      },
+      "청소년기 정체성과 자기 발견": {
+        "1": [
+          "자아와 정체성이라는 낯선 용어의 뜻을 처음 익히고 자신의 성장 경험에 빗대어 풀어 보려는 시도가 수업 내내 관찰됨.",
+          "청소년기에 몸과 마음에 어떤 변화가 나타나는지 사실을 확인하는 질문을 자주 던지며 배움의 출발점을 스스로 마련함.",
+          "자기 소개 활동에서 좋아하는 일과 잘하는 일을 나누어 적으며 자신을 이해하는 기초적인 틀을 차분히 갖추어 나감."
+        ],
+        "2": [
+          "가정과 또래 관계가 자기 이해에 미치는 영향을 서로 연결해 설명하며 배운 개념을 일상 상황에 적용하는 힘이 돋보임.",
+          "모둠 대화에서 친구들의 자기 이해 방식과 자신의 방식을 견주어 보며 관점을 다듬어 가는 모습이 뚜렷하게 나타남.",
+          "남에게 보이는 모습과 스스로 여기는 모습 사이의 간격을 파고드는 물음을 제기하고 근거를 들어 차분히 정리함."
+        ],
+        "3": [
+          "정체성을 설명하는 심리학의 관점과 종교 문헌 속 인간 이해를 나란히 비교하며 각각의 강점과 한계를 비판적으로 검토함.",
+          "여러 자료를 종합해 자기 존재의 의미에 관한 자신의 관점을 세우고 그렇게 판단한 근거를 논리적으로 진술함.",
+          "자신을 알아 가는 과정을 진로 선택과 삶의 방향이라는 물음으로 넓혀 통합적인 관점의 성찰 보고서를 완성함."
+        ]
+      },
+      "자기 성장과 자아실현": {
+        "1": [
+          "사람이 자라난다는 말의 뜻을 몸의 성장과 마음의 성장으로 나누어 정리하며 낯선 개념을 차근차근 받아들이는 모습을 보임.",
+          "자신이 잘하는 일과 좋아하는 일을 떠올려 적어 보며 자아라는 말이 무엇을 가리키는지 자기 경험에 빗대어 이해함.",
+          "성장에는 왜 시간이 걸리는지 궁금해하며 수업 중 떠오른 물음을 그때그때 손을 들어 묻고 사실을 확인하는 태도가 나타남."
+        ],
+        "2": [
+          "재능과 노력과 환경이 성장에 어떻게 함께 작용하는지 서로 연결하여 설명하고 자신의 생활 습관을 점검하는 데까지 적용함.",
+          "모둠 활동에서 성공의 기준을 서로 다르게 말하는 친구들의 의견을 들으며 자신의 기준을 다시 다듬는 모습이 돋보임.",
+          "남과 비교하는 마음이 성장에 도움이 되는지 방해가 되는지 스스로 물음을 세우고 구체적 사례를 들어 따져 보는 태도가 뚜렷함."
+        ],
+        "3": [
+          "성취를 통해 자신을 실현한다는 관점과 관계 속에서 실현한다는 관점을 견주어 검토한 뒤 자신의 입장을 근거와 함께 밝힘.",
+          "자신이 세운 삶의 방향과 희망 진로가 서로 어떻게 맞물리는지 단계별 계획으로 정리하고 근거를 들어 설득력 있게 발표함.",
+          "성공을 개인의 능력만으로 설명하는 통념의 한계를 사회적 조건과 우연의 요소까지 짚어 가며 지적하고 통합적으로 정리함."
+        ]
+      },
+      "회복탄력성과 마음 돌봄": {
+        "1": [
+          "어려움을 겪은 뒤 다시 일어서는 힘이라는 개념을 처음 접하고 낯설어하면서도, 자기 경험에 빗대어 그 뜻을 헤아려 보려는 모습이 나타남.",
+          "마음이 힘들 때 도움을 요청하는 방법을 익히며, 주변의 누구에게 어떻게 말할 수 있는지 사실을 확인하는 질문을 여러 차례 함.",
+          "감정을 알아차리고 이름 붙이는 활동에 흥미를 보이며, 하루의 기분 변화를 관찰해 간단한 기록으로 남기는 태도가 돋보임."
+        ],
+        "2": [
+          "경전 속에서 좌절을 겪은 인물들의 이야기를 서로 견주어 살피고, 회복을 돕는 힘이 개인의 의지뿐 아니라 관계와 환경에도 있음을 정리함.",
+          "시험과 교우 관계에서 겪는 긴장을 수업에서 익힌 대처 방법에 연결해 적용해 보고, 그 효과를 또래와 나누며 함께 점검함.",
+          "서로 다른 대처 방식을 모둠에서 견주어 보며 자신의 방식에 보완할 점이 무엇인지 한 단계 더 파고드는 질문을 제기함."
+        ],
+        "3": [
+          "고난을 해석하는 여러 종교적 관점과 현대 상담 이론을 나란히 비판적으로 검토한 뒤, 자신이 수긍할 수 있는 기준을 세워 정리함.",
+          "무너진 사람 곁에 오래 머무는 돌봄의 방식을 탐구하고, 이를 자신이 지망하는 진로에서 실천할 방향으로 구체화해 발표함.",
+          "회복이 개인의 노력만으로 이루어진다는 통념을 되짚고, 공동체가 함께 짊어질 몫이 무엇인지 논거를 들어 설득력 있게 주장함."
+        ]
+      },
+      "감정 이해와 공감적 관계": {
+        "1": [
+          "여러 감정에 알맞은 이름을 붙여 구분하는 활동에 흥미를 보이며, 자신이 겪은 일을 예로 들어 감정의 차이를 설명함.",
+          "공감이 상대의 처지에서 함께 느껴 보는 태도임을 기초 수준에서 익히고, 동정과 무엇이 다른지 되물으며 확인함.",
+          "이야기 속 인물의 마음을 짐작해 보는 활동에서 그렇게 생각한 근거가 되는 장면을 스스로 찾아 발표하며 이해를 넓힘."
+        ],
+        "2": [
+          "감정을 억누르는 태도와 드러내는 태도가 관계에 미치는 영향을 견주어 정리하고, 학급의 갈등 상황에 적용해 설명함.",
+          "경청의 방법을 배운 뒤 친구의 말을 되짚어 확인하는 대화를 직접 시도하고, 그 경험에서 달라진 점을 구체적으로 기록함.",
+          "모둠 토론에서 같은 상황을 다르게 느끼는 또래의 이야기를 듣고 자신의 감정 반응이 유일한 기준이 아님을 정리함."
+        ],
+        "3": [
+          "공감을 강조하는 여러 관점을 비교한 뒤 돌봄이 감정 소진으로 이어질 위험까지 함께 검토하며 자신의 기준을 세워 논술함.",
+          "고통받는 이웃을 돌보라는 종교 전통의 가르침을 오늘날의 사회적 돌봄 제도와 견주어 그 의미를 통합적으로 정리해 발표함.",
+          "타인을 대하는 태도가 자신이 지망하는 분야에서 어떤 역량으로 이어지는지 분석하고, 관계 맺기의 방향을 스스로 밝힘."
+        ]
+      },
+      "감사와 성찰의 생활화": {
+        "1": [
+          "일상에서 당연하게 여겼던 것들을 다시 살펴보는 활동에 흥미를 보였고, 하루를 돌아보며 고마웠던 순간을 찾아 짧은 글로 적어 보는 과제를 성실히 수행함.",
+          "감사라는 말이 단순한 인사말과 어떻게 다른지 궁금해하며 질문하였고, 자기 경험 속 사례를 들어 그 뜻을 나름대로 풀어 설명하려는 모습이 나타남.",
+          "성찰이 무엇인지 아직 낯설어하면서도 수업에서 제시된 사례를 하나씩 짚어 보며 그 의미를 자기 말로 바꾸어 적는 활동에 끝까지 참여함."
+        ],
+        "2": [
+          "감사의 태도가 관계와 정서에 미치는 영향을 배운 내용들과 연결해 설명하였고, 갈등 상황에 이를 적용해 보는 사례 토의에서 구체적 방안을 제시함.",
+          "하루를 돌아보는 습관을 학교생활 속 실제 장면에 적용해 기록으로 남겼고, 모둠 활동에서 또래의 사례를 들으며 자기 기준을 다듬어 가는 모습이 돋보임.",
+          "고마움을 표현하기 어려운 상황의 원인을 여러 각도에서 따져 묻는 질문을 던졌고, 앞서 배운 공동체 윤리와 연관 지어 이해의 폭을 넓힘."
+        ],
+        "3": [
+          "고마움과 자기를 돌아보는 태도를 설명하는 여러 사상 전통과 현대 심리학의 논의를 견주어 검토하였고, 근거를 갖춘 자신의 관점을 세워 발표로 제시함.",
+          "돌아보는 삶이 진로 선택과 일상의 우선순위에 어떤 기준을 세워 주는지 논하였고, 한 해 동안의 배움을 자기 언어로 통합해 정리하는 힘이 뛰어남.",
+          "형식적으로 반복되는 감사 표현의 한계를 비판적으로 짚어 내며 대안을 모색하였고, 졸업 이후의 삶에 이어 갈 실천 방향을 구체적으로 세워 보임."
+        ]
+      }
+    };
+    const gradeLines = {
+      "1": [
+        "교과를 처음 배우는 단계에 맞게 낯선 개념도 열린 마음으로 받아들이며 기초를 차근차근 다져 감.",
+        "새로운 주제를 만날 때마다 호기심을 보이며 기본 개념을 자신의 말로 정리하는 습관을 만들어 감.",
+        "처음 접하는 내용에 대한 질문이 많고, 배운 것을 익숙한 경험에 빗대어 이해하려는 시도가 잦음.",
+        "학습의 기초를 세우는 시기에 맞게 용어와 개념의 뜻을 정확히 익히려는 태도가 성실함."
+      ],
+      "2": [
+        "교과에 대한 이해가 쌓이는 시기에 맞게 배운 내용들을 서로 연결하며 생각의 폭을 넓혀 감.",
+        "주제에 대한 이해가 깊어지면서 한층 심화된 물음을 가지고 탐구하려는 모습이 나타남.",
+        "개념 이해를 넘어 배운 것을 생활 속 상황에 적용해 보려는 시도가 늘어남.",
+        "또래와의 대화와 협력 속에서 자신의 생각을 견주어 보며 관점을 다듬어 감."
+      ],
+      "3": [
+        "그동안의 배움을 종합하여 주제를 자신의 삶의 방향과 연결해 바라보는 성숙함이 나타남.",
+        "여러 관점을 비교하고 판단의 근거를 세우며 주제를 주체적으로 해석하려는 태도가 돋보임.",
+        "배운 내용을 통합적으로 정리하며 자신만의 관점을 세워 가는 모습이 인상적임.",
+        "학습을 마무리하는 시기에 맞게 핵심을 간추리고 의미를 스스로 정리하는 힘이 자람."
+      ]
+    };
+    function normalizeGradeYear(value) {
+      const match = String(value || "").match(/[1-3]/);
+      return match ? match[0] : "";
+    }
     const outlookLines = [
       "이러한 배움의 과정이 학습 태도와 표현 전반에 긍정적인 영향으로 이어지고 있음.",
       "수업에서 형성된 관심이 교과에 대한 지속적인 탐구 동기로 이어지는 모습임.",
@@ -1312,8 +1584,16 @@
       const index = Math.abs(seed) % total;
       return `${expectationHeads[Math.floor(index / expectationTails.length)]} ${expectationTails[index % expectationTails.length]}`;
     }
-    function themeLineFor(unitName, seed) {
-      const pool = unitThemeLines[unitName];
+    function themeLineFor(unitName, seed, gradeYear) {
+      const byGrade = unitGradeThemeLines[unitName];
+      const gradePool = byGrade && gradeYear ? byGrade[String(gradeYear)] : null;
+      const pool = gradePool && gradePool.length ? gradePool : unitThemeLines[unitName];
+      if (!pool || !pool.length) return "";
+      return pool[Math.abs(seed) % pool.length];
+    }
+
+    function gradeLineFor(gradeYear, seed) {
+      const pool = gradeLines[String(gradeYear)];
       if (!pool || !pool.length) return "";
       return pool[Math.abs(seed) % pool.length];
     }
@@ -1433,6 +1713,7 @@
     function getFormState() {
       return {
         gradeLevel: document.querySelector("#gradeLevel").value,
+        gradeYear: document.querySelector("#gradeYear").value,
         subjectName: document.querySelector("#subjectName").value,
         unitName: document.querySelector("#unitName").value,
         evidence: document.querySelector("#evidence").value.trim(),
@@ -1474,7 +1755,9 @@
         : "";
       const intensityPool = intensityLines[data.intensity || "stable"] || intensityLines.stable;
       const intensityLine = pickByIndex(intensityPool, isBatch ? seededIndex(`${seedName}-in`, studentIndex, 997) : variantIndex, intensityPool[0]);
-      const themeLine = themeLineFor(unitName, isBatch ? seededIndex(`${seedName}-th`, studentIndex, 997) : variantIndex);
+      const gradeYear = normalizeGradeYear(data.gradeYear);
+      const themeLine = themeLineFor(unitName, isBatch ? seededIndex(`${seedName}-th`, studentIndex, 997) : variantIndex, gradeYear);
+      const gradeLine = gradeLineFor(gradeYear, isBatch ? seededIndex(`${seedName}-gr`, studentIndex, 997) : variantIndex);
       const closer = composeCloser(isBatch ? studentIndex * 7 + (diversityMode === "high" ? 13 : 0) : variantIndex * 7);
       const toneSet = pickByIndex(individualToneSets, isBatch ? studentIndex * 3 : variantIndex, individualToneSets[0]);
       const toneLine = (toneSet[toneMode] || toneSet.balanced)(strengthText);
@@ -1495,13 +1778,14 @@
         addPart(memoLine, 1, 0);
         if (fileActivities.length) addPart(`특히 ${joinNatural(fileActivities, "수업 활동")}에 참여할 때 몰입하는 모습이 돋보임.`, 2, 0);
         addPart(themeLine, 3, 1);
-        addPart(coreLine, 4, 0);
-        addPart(intensityLine, 5, 2);
-        addPart(focusLine ? toneLine : "", 6, 3);
-        addPart(composeCloser(studentIndex * 11 + 3), 7, 5);
-        addPart(outlookLine, 8, 6);
-        addPart(closer, 9, 0);
-        addPart(composeExpectation(studentIndex * 3), 10, 4);
+        addPart(gradeLine, 4, 2);
+        addPart(coreLine, 5, 0);
+        addPart(intensityLine, 6, 3);
+        addPart(focusLine ? toneLine : "", 7, 4);
+        addPart(composeCloser(studentIndex * 11 + 3), 8, 6);
+        addPart(outlookLine, 9, 7);
+        addPart(closer, 10, 0);
+        addPart(composeExpectation(studentIndex * 3), 11, 5);
 
         const selected = items.filter((item) => item.priority === 0);
         let total = selected.reduce((sum, item) => sum + item.text.length + 1, -1);
@@ -1518,6 +1802,7 @@
       const activityText = joinNatural(activities, "수업 활동");
       const memoLine = memoText || memoFallbacks[Math.abs(variantIndex) % memoFallbacks.length](activityText);
       const themePart = themeLine ? `${themeLine} ` : "";
+      const gradePart = gradeLine ? `${gradeLine} ` : "";
       const widenVerbs = ["넓힘", "깊게 함", "키워 감"];
       const widenLine = `${levelNoun}${josa(levelNoun, "을", "를")} ${pickByIndex(widenVerbs, variantIndex, "넓힘")}`;
 
@@ -1528,10 +1813,10 @@
       if (lengthMode === "long") {
         const valueLine = composeCloser(variantIndex * 11 + 3);
         const expectationLine = composeExpectation(variantIndex * 3);
-        return `${unitOpening} ${activityText}에 성실히 참여함. ${memoLine} ${themePart}${coreLine} ${intensityLine} ${valueLine} ${expectationLine}`;
+        return `${unitOpening} ${activityText}에 성실히 참여함. ${memoLine} ${themePart}${gradePart}${coreLine} ${intensityLine} ${valueLine} ${expectationLine}`;
       }
 
-      return `${unitOpening} ${activityText}에 참여하며 ${widenLine}. ${memoLine} ${themePart}${coreLine} ${intensityLine} ${closer}`;
+      return `${unitOpening} ${activityText}에 참여하며 ${widenLine}. ${memoLine} ${themePart}${gradePart}${coreLine} ${intensityLine} ${closer}`;
     }
 
     function inspectText(text) {
@@ -1843,6 +2128,7 @@
         const classNumber = findCell(row, headers, ["반/번호", "반번호", "번호"]);
         const student = [classNumber, name].filter(Boolean).join(" ");
         const gradeLevel = findCell(row, headers, ["학교급", "중고", "급", "grade"]) || document.querySelector("#gradeLevel").value;
+        const gradeYear = normalizeGradeYear(findCell(row, headers, ["학년", "year"])) || document.querySelector("#gradeYear").value;
         const subjectName = findCell(row, headers, ["과목", "과목명", "subject"]) || document.querySelector("#subjectName").value;
         const unitName = findCell(row, headers, ["단원", "수업주제", "주제", "unit"]) || document.querySelector("#unitName").value;
         const activityText = findCell(row, headers, ["활동", "수업활동", "activity"]);
@@ -1857,6 +2143,7 @@
           headers,
           student,
           gradeLevel: gradeLevel.includes("고") ? "고등학교" : "중학교",
+          gradeYear,
           subjectName,
           unitName,
           activities: splitList(activityText, activityMap).length ? splitList(activityText, activityMap) : selectedValues("activity"),
@@ -1884,6 +2171,7 @@
             <thead>
               <tr>
                 <th>학생</th>
+                <th>학년</th>
                 <th>유형</th>
                 <th>강도</th>
                 <th>단원</th>
@@ -1895,6 +2183,7 @@
               ${batchGenerated.map((item, index) => `
                 <tr>
                   <td>${escapeHtml(item.student || `학생 ${index + 1}`)}</td>
+                  <td>${escapeHtml(normalizeGradeYear(item.gradeYear) ? `${normalizeGradeYear(item.gradeYear)}학년` : "-")}</td>
                   <td>${escapeHtml(focusProfiles[item.focusType]?.label || "공통")}</td>
                   <td>${escapeHtml(intensityLabel(item.intensity))}</td>
                   <td>${escapeHtml(item.unitName)}</td>
@@ -2358,6 +2647,7 @@
 
     document.querySelector("#sampleBtn").addEventListener("click", () => {
       document.querySelector("#gradeLevel").value = "중학교";
+      document.querySelector("#gradeYear").value = "1";
       document.querySelector("#subjectName").value = "종교";
       document.querySelector("#unitName").value = "공동체, 이웃 사랑, 섬김";
       document.querySelector("#toneMode").value = "community";
