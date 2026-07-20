@@ -887,6 +887,17 @@
                   <option value="support">보완 필요 포함</option>
                 </select>
               </div>
+              <div>
+                <label for="batchLengthTarget">목표 글자수</label>
+                <select id="batchLengthTarget">
+                  <option value="250">250자 내외</option>
+                  <option value="300">300자 내외</option>
+                  <option value="350">350자 내외</option>
+                  <option value="400" selected>400자 내외</option>
+                  <option value="450">450자 내외</option>
+                  <option value="500">500자 내외</option>
+                </select>
+              </div>
               <label class="check-line" for="autoRotateOptions">
                 <input id="autoRotateOptions" type="checkbox" checked />
                 학생별로 활동/강점 섞기
@@ -1246,6 +1257,12 @@
       "수업에서 다룬 내용을 일상의 경험에 비추어 보며 의미를 찾음.",
       "배움의 과정에서 느낀 점을 자신의 언어로 표현하려는 노력이 보임."
     ];
+    const outlookLines = [
+      "이러한 배움의 과정이 학습 태도와 표현 전반에 긍정적인 영향으로 이어지고 있음.",
+      "수업에서 형성된 관심이 교과에 대한 지속적인 탐구 동기로 이어지는 모습임.",
+      "배움에 임하는 자세가 학급 안에서의 관계와 생활 태도에도 좋은 영향을 주고 있음.",
+      "학습 과정에서 보인 진지함이 앞으로의 성장 가능성을 잘 보여 줌."
+    ];
     const closerHeads = [
       "수업에서 만난 여러 관점을",
       "수업에서 다룬 가치를",
@@ -1466,18 +1483,35 @@
       const memoText = evidence ? `관찰 근거로는 ${evidence.replace(/\s+/g, " ")}` : "";
 
       if (isBatch) {
+        const target = Math.min(1000, Math.max(200, Number(data.lengthTarget) || 400));
         const engagement = pickByIndex(engagementLines, seededIndex(`${seedName}-eng`, studentIndex, 997), engagementLines[0]);
         const fileActivities = (data.fileActivities || []).slice(0, 2);
         const memoLine = memoText || pickByIndex(batchMemoFallbacks, seededIndex(`${seedName}-memo`, studentIndex, 997), batchMemoFallbacks[0]);
-        const parts = [`${unitOpening} ${engagement}`, memoLine];
-        if (fileActivities.length) parts.push(`특히 ${joinNatural(fileActivities, "수업 활동")}에 참여할 때 몰입하는 모습이 돋보임.`);
-        if (themeLine) parts.push(themeLine);
-        parts.push(coreLine, intensityLine);
-        let text = parts.join(" ");
-        if (focusLine && `${text} ${closer}`.length < 340) text = `${text} ${toneLine}`;
-        text = `${text} ${closer}`;
-        if (text.length < 380) text = `${text} ${composeExpectation(studentIndex * 3)}`;
-        return text;
+        const outlookLine = pickByIndex(outlookLines, seededIndex(`${seedName}-out`, studentIndex, 997), outlookLines[0]);
+
+        const items = [];
+        const addPart = (text, order, priority) => { if (text) items.push({ text, order, priority }); };
+        addPart(`${unitOpening} ${engagement}`, 0, 0);
+        addPart(memoLine, 1, 0);
+        if (fileActivities.length) addPart(`특히 ${joinNatural(fileActivities, "수업 활동")}에 참여할 때 몰입하는 모습이 돋보임.`, 2, 0);
+        addPart(themeLine, 3, 1);
+        addPart(coreLine, 4, 0);
+        addPart(intensityLine, 5, 2);
+        addPart(focusLine ? toneLine : "", 6, 3);
+        addPart(composeCloser(studentIndex * 11 + 3), 7, 5);
+        addPart(outlookLine, 8, 6);
+        addPart(closer, 9, 0);
+        addPart(composeExpectation(studentIndex * 3), 10, 4);
+
+        const selected = items.filter((item) => item.priority === 0);
+        let total = selected.reduce((sum, item) => sum + item.text.length + 1, -1);
+        const optionals = items.filter((item) => item.priority > 0).sort((a, b) => a.priority - b.priority);
+        for (const option of optionals) {
+          if (total >= target - 25) break;
+          selected.push(option);
+          total += option.text.length + 1;
+        }
+        return selected.sort((a, b) => a.order - b.order).map((item) => item.text).join(" ");
       }
 
       const activities = baseActivities.slice(0, 2);
@@ -1897,7 +1931,8 @@
         intensityMode: document.querySelector("#batchIntensityMode").value,
         autoRotate: document.querySelector("#autoRotateOptions").checked,
         unitMode: document.querySelector("#batchUnitMode").value,
-        selectedUnits: selectedBatchUnits()
+        selectedUnits: selectedBatchUnits(),
+        lengthTarget: Number(document.querySelector("#batchLengthTarget").value) || 400
       };
     }
 
@@ -1922,6 +1957,7 @@
         focusType,
         intensity,
         diversityMode: options.diversityMode,
+        lengthTarget: options.lengthTarget,
         unitName: units[unitIndex] || row.unitName,
         activities: uniqueMerge(rotatedActivities, row.activities),
         strengths: uniqueMerge(rotatedStrengths, row.strengths)
