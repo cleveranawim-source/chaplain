@@ -6,21 +6,21 @@
   <title>✝️ 기독교 학교 종교과목 세특 도우미</title>
   <style>
     :root {
-      --bg: #f7f3ec;
-      --ink: #25211c;
-      --muted: #6d6257;
-      --line: #dfd2c3;
-      --panel: #fffaf3;
-      --panel-strong: #f0e5d7;
-      --green: #2f6f5e;
-      --green-soft: #dcebe4;
-      --blue: #2f5f88;
-      --blue-soft: #dce8f2;
-      --rose: #9b4652;
-      --rose-soft: #f3dfe2;
-      --gold: #8b6325;
-      --gold-soft: #f1dfb8;
-      --shadow: 0 18px 42px rgba(75, 53, 28, 0.12);
+      --bg: #ffffff;
+      --ink: #20242a;
+      --muted: #5d6673;
+      --line: #e1e5ea;
+      --panel: #ffffff;
+      --panel-strong: #f5f7fa;
+      --green: #3155a6;
+      --green-soft: #e8eef8;
+      --blue: #c07845;
+      --blue-soft: #f4e8de;
+      --rose: #a63d3d;
+      --rose-soft: #f6e7e6;
+      --gold: #c07845;
+      --gold-soft: #f4e8de;
+      --shadow: 0 18px 42px rgba(32, 40, 56, 0.10);
     }
 
     * {
@@ -32,10 +32,7 @@
       min-height: 100vh;
       color: var(--ink);
       font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
-      background:
-        linear-gradient(135deg, rgba(47, 111, 94, 0.12), transparent 34%),
-        linear-gradient(315deg, rgba(139, 99, 37, 0.13), transparent 28%),
-        var(--bg);
+      background: var(--bg);
     }
 
     button, input, select, textarea {
@@ -63,6 +60,7 @@
 
     .title-block h1 {
       margin: 0 0 8px;
+      color: var(--ink);
       font-size: clamp(1.7rem, 3.4vw, 3rem);
       line-height: 1.08;
       letter-spacing: 0;
@@ -79,9 +77,9 @@
     .privacy-note {
       width: min(340px, 100%);
       padding: 14px 16px;
-      color: #355247;
+      color: #24406f;
       background: var(--green-soft);
-      border: 1px solid rgba(47, 111, 94, 0.25);
+      border: 1px solid rgba(49, 85, 166, 0.22);
       border-radius: 8px;
       line-height: 1.55;
       font-size: 0.92rem;
@@ -95,7 +93,7 @@
     }
 
     .panel {
-      background: rgba(255, 250, 243, 0.94);
+      background: #ffffff;
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
@@ -118,14 +116,14 @@
     .input-panel .panel-header h2 {
       font-size: clamp(1.28rem, 2.2vw, 1.8rem);
       line-height: 1.2;
-      color: #243d35;
+      color: #20242a;
       font-weight: 900;
     }
 
     .panel-header h2.major-title {
       font-size: clamp(1.42rem, 2.4vw, 2rem);
       line-height: 1.18;
-      color: #243d35;
+      color: #20242a;
       font-weight: 900;
     }
 
@@ -142,7 +140,7 @@
     .label {
       display: block;
       margin-bottom: 7px;
-      color: #3b332c;
+      color: #2b2f36;
       font-weight: 700;
       font-size: 0.92rem;
     }
@@ -151,9 +149,9 @@
     select,
     textarea {
       width: 100%;
-      border: 1px solid #d8c9b8;
+      border: 1px solid #cdd4dc;
       border-radius: 8px;
-      background: #fffdf9;
+      background: #ffffff;
       color: var(--ink);
       padding: 11px 12px;
       outline: none;
@@ -170,7 +168,7 @@
     select:focus,
     textarea:focus {
       border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.14);
+      box-shadow: 0 0 0 3px rgba(49, 85, 166, 0.16);
     }
 
     .two-col {
@@ -214,19 +212,19 @@
       align-items: center;
       min-height: 38px;
       padding: 8px 12px;
-      border: 1px solid #d7c7b5;
+      border: 1px solid #d5dbe2;
       border-radius: 999px;
-      background: #fffdf9;
-      color: #4b4036;
+      background: #ffffff;
+      color: #5d6673;
       font-size: 0.9rem;
       line-height: 1.2;
       transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
     }
 
     .chip input:checked + span {
-      border-color: rgba(47, 111, 94, 0.55);
+      border-color: rgba(49, 85, 166, 0.5);
       background: var(--green-soft);
-      color: #21483d;
+      color: #24406f;
       font-weight: 700;
     }
 
@@ -245,7 +243,7 @@
       padding: 10px 14px;
       border-radius: 8px;
       background: var(--panel-strong);
-      color: #3a3028;
+      color: #3d434d;
       font-weight: 800;
     }
 
@@ -260,18 +258,18 @@
     }
 
     .btn.navy {
-      background: #172a46;
+      background: #223a5f;
       color: white;
     }
 
     .btn.warn {
       background: var(--gold-soft);
-      color: #614516;
+      color: #8a5320;
     }
 
     .btn.danger {
       background: var(--rose-soft);
-      color: #71313b;
+      color: #8a3030;
     }
 
     .output-grid {
@@ -284,8 +282,9 @@
       min-height: 184px;
       padding: 18px;
       border-radius: 8px;
-      border: 1px solid #d9c9b6;
-      background: #fffdf9;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--ink);
       line-height: 1.82;
       white-space: pre-wrap;
       word-break: keep-all;
@@ -306,20 +305,20 @@
       min-height: 30px;
       padding: 6px 10px;
       border-radius: 999px;
-      background: #eee3d4;
-      color: #55483c;
+      background: #eef1f5;
+      color: #5d6673;
       font-weight: 700;
       font-size: 0.82rem;
     }
 
     .pill.good {
       background: var(--green-soft);
-      color: #255347;
+      color: #24406f;
     }
 
     .pill.caution {
       background: var(--rose-soft);
-      color: #71313b;
+      color: #8a3030;
     }
 
     .guidance {
@@ -332,7 +331,7 @@
       padding: 13px;
       border-radius: 8px;
       border: 1px solid var(--line);
-      background: #fffdf9;
+      background: #ffffff;
       line-height: 1.55;
       font-size: 0.9rem;
     }
@@ -340,7 +339,7 @@
     .guide-card strong {
       display: block;
       margin-bottom: 5px;
-      color: #2f2a25;
+      color: #20242a;
     }
 
     .saved-list {
@@ -372,7 +371,7 @@
       padding: 12px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: rgba(255, 253, 249, 0.72);
+      background: #f5f7fa;
     }
 
     .option-strip label {
@@ -385,7 +384,7 @@
       align-items: center;
       min-height: 42px;
       padding-top: 22px;
-      color: #3d332b;
+      color: #20242a;
       font-size: 0.9rem;
       font-weight: 800;
     }
@@ -401,7 +400,7 @@
       padding: 12px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: rgba(255, 253, 249, 0.74);
+      background: #f5f7fa;
     }
 
     .batch-unit-head {
@@ -434,10 +433,10 @@
       gap: 9px;
       min-height: 42px;
       padding: 10px 11px;
-      border: 1px solid #d7c7b5;
+      border: 1px solid #d5dbe2;
       border-radius: 8px;
-      background: #fffdf9;
-      color: #3f372f;
+      background: #ffffff;
+      color: #5d6673;
       line-height: 1.35;
       font-size: 0.9rem;
       font-weight: 700;
@@ -453,40 +452,40 @@
     }
 
     .visible-check:has(input:checked) {
-      border-color: rgba(47, 111, 94, 0.55);
+      border-color: rgba(49, 85, 166, 0.5);
       background: var(--green-soft);
-      color: #21483d;
+      color: #24406f;
     }
 
     .similarity-report {
       margin-top: 10px;
       padding: 12px;
-      border: 1px solid #d9c9b6;
+      border: 1px solid #e1e5ea;
       border-radius: 8px;
-      background: #fffdf9;
-      color: #4b4036;
+      background: #ffffff;
+      color: #5d6673;
       line-height: 1.55;
       font-size: 0.9rem;
     }
 
     .similarity-report strong {
-      color: #302922;
+      color: #20242a;
     }
 
     .file-input {
       width: 100%;
-      border: 1px dashed #cdbba7;
+      border: 1px dashed #c7ced6;
       border-radius: 8px;
       padding: 10px;
-      background: #fffdf9;
-      color: #4b4036;
+      background: #ffffff;
+      color: #5d6673;
     }
 
     .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #fffdf9;
+      background: #ffffff;
     }
 
     table {
@@ -499,15 +498,15 @@
     th,
     td {
       padding: 10px;
-      border-bottom: 1px solid #eadfd2;
+      border-bottom: 1px solid #edf0f3;
       text-align: left;
       vertical-align: top;
       line-height: 1.55;
     }
 
     th {
-      background: #f3eadf;
-      color: #3d332b;
+      background: #f5f7fa;
+      color: #20242a;
       font-weight: 800;
       white-space: nowrap;
     }
@@ -518,13 +517,13 @@
 
     .batch-result-text {
       min-width: 360px;
-      color: #443a32;
+      color: #5d6673;
     }
 
     .saved-item {
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #fffdf9;
+      background: #ffffff;
       padding: 12px;
     }
 
@@ -539,7 +538,7 @@
 
     .saved-item p {
       margin: 0;
-      color: #4d433a;
+      color: #5d6673;
       line-height: 1.65;
       font-size: 0.92rem;
     }
@@ -554,18 +553,18 @@
       min-height: 30px;
       padding: 6px 9px;
       border-radius: 7px;
-      background: #ede2d3;
-      color: #4d4034;
+      background: #eef1f5;
+      color: #5d6673;
       font-size: 0.8rem;
       font-weight: 800;
     }
 
     .empty {
       padding: 16px;
-      border: 1px dashed #d3c4b4;
+      border: 1px dashed #c7ced6;
       border-radius: 8px;
       color: var(--muted);
-      background: rgba(255, 253, 249, 0.72);
+      background: #f5f7fa;
       line-height: 1.55;
     }
 
@@ -576,7 +575,7 @@
       transform: translateX(-50%) translateY(12px);
       padding: 11px 14px;
       border-radius: 8px;
-      background: #25211c;
+      background: #20242a;
       color: white;
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
       opacity: 0;
@@ -682,7 +681,7 @@
   <main class="app-shell">
     <header class="topbar">
       <div class="title-block">
-        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v7 · 2026-07-20</span></h1>
+        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v8 · 2026-07-21</span></h1>
         <p>중학교와 고등학교 종교 수업의 관찰 근거를 바탕으로 생활기록부 교과세부특기사항 초안을 만듭니다. 신앙의 깊이를 평가하지 않고, 수업에서 드러난 이해, 해석, 성찰, 표현, 공동체 태도를 중심으로 정리합니다.</p>
       </div>
       <aside class="privacy-note">입력 내용은 이 브라우저 안에만 저장됩니다. 학생 실명 대신 번호나 이니셜을 사용하면 더 안전합니다.</aside>
