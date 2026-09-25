@@ -617,12 +617,27 @@
       flex: 1 1 320px;
     }
 
-    .ai-row #aiCodeField input {
-      width: 180px;
+    #aiCodeField input {
+      max-width: 280px;
     }
 
-    .ai-row #aiPersonalKey {
-      width: 280px;
+    .ai-key-box {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .ai-key-box label {
+      margin-bottom: 0;
+    }
+
+    .ai-key-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
     }
 
     .check-line.ai-remember {
@@ -815,14 +830,12 @@
         grid-template-columns: 1fr;
       }
 
-      .ai-row #aiCodeField,
-      .ai-row #aiCodeField input,
-      .ai-row #aiPersonalKey {
-        width: 100%;
+      #aiCodeField input {
+        max-width: none;
       }
 
-      .ai-row > div {
-        flex: 1 1 100%;
+      .ai-key-row .btn {
+        flex: 0 0 auto;
       }
 
       .check-line {
@@ -914,25 +927,36 @@
         <span class="help-text" id="aiModeText"></span>
       </summary>
       <div class="ai-settings-body">
-        <div class="ai-row">
-          <div id="aiCodeField" hidden>
-            <label for="aiAccessCode">접속 코드</label>
-            <input id="aiAccessCode" type="password" autocomplete="off" />
-          </div>
-          <div>
-            <label for="aiPersonalKey">개인 API 키: GPT 또는 Claude (선택)</label>
-            <input id="aiPersonalKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-… (GPT) 또는 sk-ant-… (Claude)" />
+        <div>
+          <label for="aiModelSelect">AI 모델</label>
+          <select id="aiModelSelect">
+            <option value="upstage">Upstage Solar Pro 4 (학교 제공 · 기본)</option>
+            <option value="openai">GPT-6 Luna (내 OpenAI 키)</option>
+            <option value="anthropic">Claude Sonnet 5 (내 Anthropic 키)</option>
+          </select>
+          <p class="help-text" id="aiSendTarget">활동·관찰 내용이 Upstage로 전송됩니다.</p>
+        </div>
+        <div id="aiCodeField" hidden>
+          <label for="aiAccessCode">접속 코드</label>
+          <input id="aiAccessCode" type="password" autocomplete="off" />
+        </div>
+        <div class="ai-key-box" id="aiKeyBox" hidden>
+          <label for="aiPersonalKey" id="aiKeyLabel">API 키</label>
+          <div class="ai-key-row">
+            <input id="aiPersonalKey" type="password" autocomplete="off" spellcheck="false" />
+            <button class="btn" type="button" id="aiApplyKeyBtn">적용</button>
           </div>
           <label class="check-line ai-remember" for="aiRememberKey">
             <input id="aiRememberKey" type="checkbox" />
             이 PC에 키 기억
           </label>
+          <p class="help-text" id="aiKeyStatus"></p>
         </div>
         <label class="check-line ai-consent" for="aiConsent">
           <input id="aiConsent" type="checkbox" />
-          메모·단원·학년·수업 내용(개별 학생 탭에서는 체크한 활동·강점 포함)을 AI 회사(학교 키는 업스테이지, 개인 키는 OpenAI 또는 Anthropic)로 보내는 데 동의합니다. 성명·반/번호는 보내지 않고, 메모 속 학생 이름은 '학생'으로 바꿔 보냅니다.
+          <span>메모·단원·학년·수업 내용(개별 학생 탭에서는 체크한 활동·강점 포함)을 <strong id="aiConsentTarget">Upstage로</strong> 보내는 데 동의합니다. 성명·반/번호는 보내지 않고, 메모 속 학생 이름은 '학생'으로 바꿔 보냅니다.</span>
         </label>
-        <p class="help-text">개인 키는 GPT(OpenAI, sk-로 시작)와 Claude(Anthropic, sk-ant-로 시작)만 쓸 수 있고, 키 앞부분으로 회사를 자동으로 가립니다<span id="aiPersonalModels"></span>. 개인 키를 넣으면 그 키로 호출하고 사용료도 그 계정에서 나갑니다(접속 코드 필요 없음). 키는 이 웹앱의 서버를 거쳐 해당 AI 회사로만 전달되며 서버에 저장하거나 기록하지 않습니다. 공용 PC에서는 '이 PC에 키 기억'을 켜지 마세요.</p>
+        <p class="help-text">개인 키 모델을 고르면 그 키로 호출하고 사용료도 그 계정에서 나갑니다(접속 코드 필요 없음). 키는 이 웹앱의 서버를 거쳐 해당 AI 회사로만 전달되며 서버에 저장하거나 기록하지 않습니다. 공용 PC에서는 '이 PC에 키 기억'을 켜지 마세요.</p>
       </div>
     </details>
 
@@ -1285,6 +1309,7 @@
     const aiSettings = document.querySelector("#aiSettings");
     const aiModeText = document.querySelector("#aiModeText");
     const aiPersonalKeyInput = document.querySelector("#aiPersonalKey");
+    const aiModelSelect = document.querySelector("#aiModelSelect");
     const aiRememberKey = document.querySelector("#aiRememberKey");
     const cautionWords = ["믿음이 좋", "신앙이 깊", "경건", "은혜를 많이", "하나님을 사랑", "기도를 잘", "모범적인 신앙", "신앙심", "독실", "회심", "구원의 확신", "성령"];
     const defaultUnits = [...unitSelect.options].map((option) => option.value);
@@ -1984,7 +2009,29 @@
     let batchLoadToken = 0;
     const AI_ENDPOINT = "/api/refine";
     const AI_CODE_SESSION_KEY = "christian-subject-setak-ai-code";
-    const AI_KEY_STORAGE_KEY = "christian-subject-setak-ai-key";
+    // 예전 버전은 개인 키 하나를 이 이름으로 저장했다. 불러올 때 회사별 저장 칸으로 옮긴다.
+    const AI_LEGACY_KEY_STORAGE_KEY = "christian-subject-setak-ai-key";
+    const AI_KEY_STORAGE_PREFIX = "christian-subject-setak-ai-key-";
+    const AI_PROVIDER_PREF_KEY = "christian-subject-setak-ai-provider";
+    const AI_PROVIDERS = {
+      upstage: { company: "Upstage", to: "Upstage로", owner: "학교 제공 · 기본" },
+      openai: { company: "OpenAI", to: "OpenAI로", owner: "내 OpenAI 키", placeholder: "sk-...", matches: (key) => key.startsWith("sk-") && !key.startsWith("sk-ant-") },
+      anthropic: { company: "Anthropic", to: "Anthropic으로", owner: "내 Anthropic 키", placeholder: "sk-ant-...", matches: (key) => key.startsWith("sk-ant-") }
+    };
+    const AI_MODEL_LABELS = {
+      "solar-pro4": "Upstage Solar Pro 4",
+      "gpt-6-luna": "GPT-6 Luna",
+      "gpt-6-sol": "GPT-6 Sol",
+      "gpt-6-astra": "GPT-6 Astra",
+      "claude-sonnet-5": "Claude Sonnet 5",
+      "claude-opus-5": "Claude Opus 5",
+      "claude-opus-5-5": "Claude Opus 5.5",
+      "claude-fable-5-1": "Claude Fable 5.1"
+    };
+    let aiModels = { upstage: "solar-pro4", openai: "gpt-6-luna", anthropic: "claude-sonnet-5" };
+    // 적용한 개인 키(회사별)와 '이 PC에 키 기억' 여부
+    const aiKeys = { openai: "", anthropic: "" };
+    const aiRemembered = { openai: false, anthropic: false };
     const AI_CONCURRENCY = 3;
     let aiStatus = { reachable: false, serverKey: false, requiresCode: false };
     let currentTab = "batch";
@@ -3415,7 +3462,7 @@
       updateAiButton();
     }
 
-    // 서버 키가 없어도 서버 함수만 있으면 개인 키로 쓸 수 있다.
+    // 서버 키가 없어도 서버 함수만 있으면 개인 키 모델로 쓸 수 있다.
     async function checkAiAvailability() {
       if (!/^https?:$/.test(location.protocol)) {
         setAiUnavailable("파일을 직접 열었을 때는 AI로 다듬기를 쓸 수 없습니다. 웹사이트 주소로 접속해 주세요.");
@@ -3426,29 +3473,75 @@
         const data = await response.json();
         if (!response.ok) throw new Error(`status ${response.status}`);
         aiStatus = { reachable: true, serverKey: Boolean(data.enabled), requiresCode: Boolean(data.requiresCode) };
-        const models = data.personalModels || {};
-        document.querySelector("#aiPersonalModels").textContent = models.openai && models.anthropic
-          ? `(GPT 키는 ${models.openai}, Claude 키는 ${models.anthropic} 모델로 호출)`
-          : "";
+        const personal = data.personalModels || {};
+        aiModels = {
+          upstage: data.model || aiModels.upstage,
+          openai: personal.openai || aiModels.openai,
+          anthropic: personal.anthropic || aiModels.anthropic
+        };
       } catch (error) {
         setAiUnavailable("AI 서버에 연결할 수 없습니다.");
         return;
       }
-      aiStatusPill.textContent = aiStatus.serverKey ? "사용 가능" : "개인 키 필요";
-      aiStatusPill.className = aiStatus.serverKey ? "pill good" : "pill";
-      aiModeText.textContent = !aiStatus.serverKey
-        ? "개인 GPT 또는 Claude API 키를 넣으면 쓸 수 있습니다."
-        : aiStatus.requiresCode
-          ? "학교 키는 접속 코드로, 또는 개인 GPT·Claude 키로 쓸 수 있습니다."
-          : "학교 키로 쓸 수 있고, 개인 GPT·Claude 키를 넣으면 그 키로 호출합니다.";
+      [...aiModelSelect.options].forEach((option) => {
+        const provider = option.value;
+        const noSchoolKey = provider === "upstage" && !aiStatus.serverKey;
+        option.textContent = `${aiModelLabel(provider)} (${noSchoolKey ? "학교 키 없음" : AI_PROVIDERS[provider].owner})`;
+        option.disabled = noSchoolKey;
+      });
+      loadAiCredentials();
+      let preferred = "";
+      try {
+        preferred = localStorage.getItem(AI_PROVIDER_PREF_KEY) || "";
+      } catch (error) {
+        preferred = "";
+      }
+      const usable = (provider) => AI_PROVIDERS[provider] && !(provider === "upstage" && !aiStatus.serverKey);
+      aiModelSelect.value = usable(preferred) ? preferred : (aiStatus.serverKey ? "upstage" : "openai");
       document.querySelector("#aiUnavailableText").hidden = true;
       document.querySelector("#aiFields").hidden = false;
-      document.querySelector("#aiCodeField").hidden = !(aiStatus.serverKey && aiStatus.requiresCode);
       singleAiBtn.hidden = false;
-      loadAiCredentials();
+      renderAiProviderUi();
       updateAiSettingsVisibility();
       updateAiButton();
       renderBatchResults();
+    }
+
+    function aiModelLabel(provider) {
+      const id = aiModels[provider];
+      return AI_MODEL_LABELS[id] || id;
+    }
+
+    function selectedAiProvider() {
+      return aiModelSelect.value;
+    }
+
+    function maskKey(key) {
+      return key.length > 12 ? `${key.slice(0, 7)}…${key.slice(-4)}` : "…";
+    }
+
+    // 고른 모델에 맞게 전송 대상 안내, 접속 코드 칸, 개인 키 칸, 요약 줄을 바꾼다.
+    function renderAiProviderUi() {
+      const provider = selectedAiProvider();
+      const info = AI_PROVIDERS[provider];
+      const personal = provider !== "upstage";
+      document.querySelector("#aiSendTarget").textContent = `활동·관찰 내용이 ${info.to} 전송됩니다.`;
+      document.querySelector("#aiConsentTarget").textContent = info.to;
+      document.querySelector("#aiCodeField").hidden = !(provider === "upstage" && aiStatus.serverKey && aiStatus.requiresCode);
+      document.querySelector("#aiKeyBox").hidden = !personal;
+      const ready = personal ? Boolean(aiKeys[provider]) : aiStatus.serverKey;
+      if (personal) {
+        document.querySelector("#aiKeyLabel").textContent = `${info.company} API 키`;
+        aiPersonalKeyInput.placeholder = info.placeholder;
+        aiPersonalKeyInput.value = aiKeys[provider];
+        aiRememberKey.checked = aiRemembered[provider];
+        document.querySelector("#aiKeyStatus").textContent = aiKeys[provider]
+          ? `적용됨: ${maskKey(aiKeys[provider])}${aiRemembered[provider] ? " · 이 PC에 기억함" : " · 이 탭을 닫으면 지워짐"}`
+          : `${info.placeholder}로 시작하는 키를 넣고 적용을 눌러 주세요.`;
+      }
+      aiStatusPill.textContent = ready ? "사용 가능" : "설정 필요";
+      aiStatusPill.className = ready ? "pill good" : "pill";
+      aiModeText.textContent = `모델: ${aiModelLabel(provider)}`;
     }
 
     function updateAiSettingsVisibility() {
@@ -3461,29 +3554,35 @@
     }
 
     // 접속 코드는 이 탭을 닫을 때까지, 개인 키는 '이 PC에 키 기억'을 켰을 때만 브라우저에 오래 남긴다.
-    function storeAiCredentials() {
-      const key = aiPersonalKeyInput.value.trim();
+    function storeProviderKey(provider) {
+      const storageKey = `${AI_KEY_STORAGE_PREFIX}${provider}`;
       try {
-        sessionStorage.setItem(AI_CODE_SESSION_KEY, aiAccessCodeInput.value.trim());
-        if (aiRememberKey.checked && key) {
-          localStorage.setItem(AI_KEY_STORAGE_KEY, key);
-          sessionStorage.removeItem(AI_KEY_STORAGE_KEY);
-        } else {
-          localStorage.removeItem(AI_KEY_STORAGE_KEY);
-          if (key) sessionStorage.setItem(AI_KEY_STORAGE_KEY, key);
-          else sessionStorage.removeItem(AI_KEY_STORAGE_KEY);
-        }
+        localStorage.removeItem(storageKey);
+        sessionStorage.removeItem(storageKey);
+        if (aiKeys[provider]) (aiRemembered[provider] ? localStorage : sessionStorage).setItem(storageKey, aiKeys[provider]);
       } catch (error) {
-        // 저장소를 못 써도 입력칸의 값으로 이번 요청은 보낼 수 있다.
+        // 저장소를 못 써도 적용한 키로 이번 요청은 보낼 수 있다.
       }
     }
 
     function loadAiCredentials() {
       try {
-        const remembered = localStorage.getItem(AI_KEY_STORAGE_KEY) || "";
         aiAccessCodeInput.value = sessionStorage.getItem(AI_CODE_SESSION_KEY) || "";
-        aiRememberKey.checked = Boolean(remembered);
-        aiPersonalKeyInput.value = remembered || sessionStorage.getItem(AI_KEY_STORAGE_KEY) || "";
+        const legacyRemembered = localStorage.getItem(AI_LEGACY_KEY_STORAGE_KEY) || "";
+        const legacy = legacyRemembered || sessionStorage.getItem(AI_LEGACY_KEY_STORAGE_KEY) || "";
+        localStorage.removeItem(AI_LEGACY_KEY_STORAGE_KEY);
+        sessionStorage.removeItem(AI_LEGACY_KEY_STORAGE_KEY);
+        ["openai", "anthropic"].forEach((provider) => {
+          const storageKey = `${AI_KEY_STORAGE_PREFIX}${provider}`;
+          const remembered = localStorage.getItem(storageKey) || "";
+          aiKeys[provider] = remembered || sessionStorage.getItem(storageKey) || "";
+          aiRemembered[provider] = Boolean(remembered);
+          if (!aiKeys[provider] && legacy && AI_PROVIDERS[provider].matches(legacy)) {
+            aiKeys[provider] = legacy;
+            aiRemembered[provider] = Boolean(legacyRemembered);
+            storeProviderKey(provider);
+          }
+        });
       } catch (error) {
         // 저장된 값이 없으면 빈칸으로 둔다.
       }
@@ -3491,25 +3590,66 @@
 
     function clearAiCredentials() {
       aiAccessCodeInput.value = "";
-      aiPersonalKeyInput.value = "";
-      aiRememberKey.checked = false;
       aiConsent.checked = false;
+      ["openai", "anthropic"].forEach((provider) => {
+        aiKeys[provider] = "";
+        aiRemembered[provider] = false;
+        storeProviderKey(provider);
+      });
       try {
         sessionStorage.removeItem(AI_CODE_SESSION_KEY);
-        sessionStorage.removeItem(AI_KEY_STORAGE_KEY);
-        localStorage.removeItem(AI_KEY_STORAGE_KEY);
       } catch (error) {
         // 저장소를 못 쓰면 지울 것도 없다.
       }
+      if (aiStatus.reachable) renderAiProviderUi();
     }
 
-    aiRememberKey.addEventListener("change", storeAiCredentials);
-    aiPersonalKeyInput.addEventListener("change", storeAiCredentials);
+    // 입력칸의 키를 고른 회사의 키로 적용한다. quiet이면 성공 알림을 띄우지 않는다.
+    function applyPersonalKey(quiet = false) {
+      const provider = selectedAiProvider();
+      const info = AI_PROVIDERS[provider];
+      const key = aiPersonalKeyInput.value.trim();
+      if (key && !info.matches(key)) {
+        showToast(`${info.company} 키가 아닙니다. ${info.placeholder}로 시작하는 키를 넣어 주세요`);
+        aiPersonalKeyInput.focus();
+        return false;
+      }
+      aiKeys[provider] = key;
+      aiRemembered[provider] = Boolean(key) && aiRememberKey.checked;
+      storeProviderKey(provider);
+      renderAiProviderUi();
+      if (!quiet) showToast(key ? `${info.company} 키를 적용했습니다` : `${info.company} 키를 지웠습니다`);
+      return true;
+    }
 
-    // 개인 키가 있으면 그 키를, 없으면 접속 코드를 보낸다.
+    aiModelSelect.addEventListener("change", () => {
+      try {
+        localStorage.setItem(AI_PROVIDER_PREF_KEY, selectedAiProvider());
+      } catch (error) {
+        // 고른 모델을 기억하지 못해도 이번에는 그대로 쓸 수 있다.
+      }
+      // 보내는 회사가 바뀌면 동의도 다시 받는다.
+      aiConsent.checked = false;
+      renderAiProviderUi();
+    });
+    document.querySelector("#aiApplyKeyBtn").addEventListener("click", () => applyPersonalKey());
+    aiPersonalKeyInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") applyPersonalKey();
+    });
+    aiRememberKey.addEventListener("change", () => {
+      const provider = selectedAiProvider();
+      if (!aiKeys[provider]) return;
+      aiRemembered[provider] = aiRememberKey.checked;
+      storeProviderKey(provider);
+      renderAiProviderUi();
+    });
+
+    // 학교 모델이면 접속 코드를, 개인 키 모델이면 그 회사의 키를 보낸다.
     function credentialFields() {
-      const apiKey = aiPersonalKeyInput.value.trim();
-      return apiKey ? { apiKey } : { accessCode: aiAccessCodeInput.value.trim() };
+      const provider = selectedAiProvider();
+      return provider === "upstage"
+        ? { provider, accessCode: aiAccessCodeInput.value.trim() }
+        : { provider, apiKey: aiKeys[provider] };
     }
 
     function aiPreflight() {
@@ -3521,28 +3661,40 @@
         showToast("지금은 AI로 다듬기를 쓸 수 없습니다");
         return false;
       }
+      const provider = selectedAiProvider();
+      if (provider === "upstage") {
+        if (!aiStatus.serverKey) {
+          showToast("학교 키가 없습니다. 'AI 모델'에서 GPT나 Claude를 고르고 개인 키를 넣어 주세요");
+          openSettingsAt(aiModelSelect);
+          return false;
+        }
+        if (aiStatus.requiresCode && !aiAccessCodeInput.value.trim()) {
+          showToast("접속 코드를 입력해 주세요");
+          openSettingsAt(aiAccessCodeInput);
+          return false;
+        }
+      } else {
+        // 적용을 누르지 않고 키만 입력했어도 그대로 쓴다.
+        if (aiPersonalKeyInput.value.trim() !== aiKeys[provider] && !applyPersonalKey(true)) {
+          openSettingsAt(aiPersonalKeyInput);
+          return false;
+        }
+        if (!aiKeys[provider]) {
+          showToast(`${AI_PROVIDERS[provider].company} API 키를 넣어 주세요`);
+          openSettingsAt(aiPersonalKeyInput);
+          return false;
+        }
+      }
       if (!aiConsent.checked) {
         showToast("위쪽 'AI로 다듬기 설정'에서 전송 동의에 체크해 주세요");
         openSettingsAt(aiConsent);
         return false;
       }
-      const personalKey = aiPersonalKeyInput.value.trim();
-      if (personalKey && !personalKey.startsWith("sk-")) {
-        showToast("개인 키는 GPT(sk-로 시작) 또는 Claude(sk-ant-로 시작) 키만 쓸 수 있습니다");
-        openSettingsAt(aiPersonalKeyInput);
-        return false;
+      try {
+        sessionStorage.setItem(AI_CODE_SESSION_KEY, aiAccessCodeInput.value.trim());
+      } catch (error) {
+        // 코드를 기억하지 못해도 이번 요청에는 지장이 없다.
       }
-      if (!personalKey && !aiStatus.serverKey) {
-        showToast("개인 GPT 또는 Claude API 키를 입력해 주세요");
-        openSettingsAt(aiPersonalKeyInput);
-        return false;
-      }
-      if (!personalKey && aiStatus.requiresCode && !aiAccessCodeInput.value.trim()) {
-        showToast("접속 코드 또는 개인 API 키를 입력해 주세요");
-        openSettingsAt(aiAccessCodeInput);
-        return false;
-      }
-      storeAiCredentials();
       return true;
     }
 

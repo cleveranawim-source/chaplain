@@ -281,12 +281,23 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return res.status(400).json({ error: "요청 형식이 올바르지 않습니다." });
   }
-  const personalKey = String(input.apiKey || "").trim();
+  // 화면에서 고른 모델(provider)을 따른다. 예전 화면처럼 provider 없이 키만 오면 키 앞부분으로 가린다.
+  const requested = String(input.provider || "");
+  const personalKey = requested === "upstage" ? "" : String(input.apiKey || "").trim();
+  if (requested && !["upstage", "openai", "anthropic"].includes(requested)) {
+    return res.status(400).json({ error: "지원하지 않는 AI 모델입니다." });
+  }
+  if (requested && requested !== "upstage" && !personalKey) {
+    return res.status(400).json({ error: "선택한 모델의 개인 API 키를 입력해 주세요." });
+  }
   let provider = "upstage";
   if (personalKey) {
     provider = /^[\w.-]{10,300}$/.test(personalKey) ? personalProvider(personalKey) : "";
     if (!provider) {
       return res.status(400).json({ error: "개인 키는 GPT(OpenAI, sk-로 시작) 또는 Claude(Anthropic, sk-ant-로 시작) 키만 쓸 수 있습니다." });
+    }
+    if (requested && requested !== provider) {
+      return res.status(400).json({ error: "선택한 모델과 API 키 종류가 맞지 않습니다. OpenAI 키는 sk-, Anthropic 키는 sk-ant-로 시작합니다." });
     }
   } else {
     if (!apiKey) {
