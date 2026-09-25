@@ -3,3 +3,4 @@
 work/
 outputs/
 *.log
+node_modules/
