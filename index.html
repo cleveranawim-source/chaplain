@@ -617,13 +617,60 @@
       flex: 1 1 320px;
     }
 
-    .ai-row #aiCodeField input,
-    .ai-row #singleAiCodeField input {
+    .ai-row #aiCodeField input {
       width: 180px;
     }
 
-    .single-ai {
-      margin-top: 12px;
+    .ai-row #aiPersonalKey {
+      width: 280px;
+    }
+
+    .check-line.ai-remember {
+      padding-top: 0;
+      min-height: 44px;
+    }
+
+    .ai-settings {
+      margin: -6px 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-strong);
+    }
+
+    .ai-settings summary {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    .ai-settings summary .help-text {
+      margin: 0;
+    }
+
+    .ai-settings summary {
+      list-style: none;
+    }
+
+    .ai-settings summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .ai-settings summary::before {
+      content: "▸";
+      color: var(--muted);
+    }
+
+    .ai-settings[open] summary::before {
+      content: "▾";
+    }
+
+    .ai-settings-body {
+      display: grid;
+      gap: 10px;
+      padding: 0 14px 14px;
     }
 
     .check-line.ai-consent {
@@ -768,9 +815,14 @@
         grid-template-columns: 1fr;
       }
 
+      .ai-row #aiCodeField,
       .ai-row #aiCodeField input,
-      .ai-row #singleAiCodeField input {
+      .ai-row #aiPersonalKey {
         width: 100%;
+      }
+
+      .ai-row > div {
+        flex: 1 1 100%;
       }
 
       .check-line {
@@ -854,6 +906,35 @@
       <button class="tab" type="button" role="tab" id="tab-single" data-tab="single" aria-controls="panel-single" aria-selected="false" tabindex="-1">개별 학생</button>
       <button class="tab" type="button" role="tab" id="tab-saved" data-tab="saved" aria-controls="panel-saved" aria-selected="false" tabindex="-1">저장한 메모 <span class="tab-count" id="savedCount">0</span></button>
     </nav>
+
+    <details class="ai-settings" id="aiSettings" hidden>
+      <summary>
+        <strong>AI로 다듬기 설정</strong>
+        <span class="pill" id="aiStatusPill">확인 중</span>
+        <span class="help-text" id="aiModeText"></span>
+      </summary>
+      <div class="ai-settings-body">
+        <div class="ai-row">
+          <div id="aiCodeField" hidden>
+            <label for="aiAccessCode">접속 코드</label>
+            <input id="aiAccessCode" type="password" autocomplete="off" />
+          </div>
+          <div>
+            <label for="aiPersonalKey">개인 업스테이지 API 키 (선택)</label>
+            <input id="aiPersonalKey" type="password" autocomplete="off" spellcheck="false" placeholder="up_로 시작하는 키" />
+          </div>
+          <label class="check-line ai-remember" for="aiRememberKey">
+            <input id="aiRememberKey" type="checkbox" />
+            이 PC에 키 기억
+          </label>
+        </div>
+        <label class="check-line ai-consent" for="aiConsent">
+          <input id="aiConsent" type="checkbox" />
+          메모·단원·학년·수업 내용(개별 학생 탭에서는 체크한 활동·강점 포함)을 업스테이지 AI로 보내는 데 동의합니다. 성명·반/번호는 보내지 않고, 메모 속 학생 이름은 '학생'으로 바꿔 보냅니다.
+        </label>
+        <p class="help-text">개인 키를 넣으면 그 키로 호출하고 사용료도 그 계정에서 나갑니다(접속 코드 필요 없음). 키는 이 웹앱의 서버를 거쳐 업스테이지로만 전달되며 서버에 저장하거나 기록하지 않습니다. 공용 PC에서는 '이 PC에 키 기억'을 켜지 마세요.</p>
+      </div>
+    </details>
 
     <section class="tab-panel" id="panel-batch" role="tabpanel" aria-labelledby="tab-batch">
       <section class="panel">
@@ -960,24 +1041,14 @@
             </div>
           </div>
           <div class="batch-unit-box ai-box">
-            <div class="label">AI로 다듬기 <span class="pill" id="aiStatusPill">확인 중</span></div>
-            <p class="help-text" style="margin-top: 3px;">일괄 생성한 뒤, 관찰 메모가 있는 학생만 AI(업스테이지 Solar)가 '반 공통 수업 내용 + 그 학생의 메모'로 세특 문장을 다시 씁니다. 메모가 없는 학생은 지금 방식 그대로 두고 '메모 없음'으로 표시합니다. AI 결과는 반드시 메모와 비교해 확인해 주세요.</p>
+            <div class="label">AI로 다듬기</div>
+            <p class="help-text" style="margin-top: 3px;">일괄 생성한 뒤, 관찰 메모가 있는 학생만 AI(업스테이지 Solar)가 '반 공통 수업 내용 + 그 학생의 메모'로 세특 문장을 다시 씁니다. 메모가 없는 학생은 지금 방식 그대로 두고 '메모 없음'으로 표시합니다. AI 결과는 반드시 메모와 비교해 확인해 주세요. 전송 동의·접속 코드·개인 API 키는 위쪽 'AI로 다듬기 설정'에서 입력합니다.</p>
             <p class="help-text" id="aiUnavailableText" hidden></p>
             <div class="ai-fields" id="aiFields" hidden>
               <div>
                 <label for="classContext">반 공통 수업 내용</label>
                 <textarea id="classContext" placeholder="예: 선한 사마리아인 본문을 읽고 '나의 이웃은 누구인가'를 주제로 모둠 토론과 성찰 글쓰기를 함."></textarea>
                 <p class="help-text">반 전체가 함께 한 활동만 적어 주세요. 모든 학생의 글에 수업 맥락으로 쓰입니다.</p>
-              </div>
-              <div class="ai-row">
-                <div id="aiCodeField" hidden>
-                  <label for="aiAccessCode">접속 코드</label>
-                  <input id="aiAccessCode" type="password" autocomplete="off" />
-                </div>
-                <label class="check-line ai-consent" for="aiConsent">
-                  <input id="aiConsent" type="checkbox" />
-                  메모·단원·학년·수업 내용을 업스테이지 AI로 보내는 데 동의합니다(성명·반/번호는 보내지 않고, 메모 속 학생 이름은 '학생'으로 바꿔 보냄)
-                </label>
               </div>
             </div>
           </div>
@@ -1140,16 +1211,6 @@
               <button class="btn" type="button" id="variantBtn">다른 표현</button>
               <button class="btn navy" type="button" id="singleAiBtn" hidden>AI로 다듬기</button>
             </div>
-            <div class="ai-row single-ai" id="singleAiFields" hidden>
-              <div id="singleAiCodeField" hidden>
-                <label for="singleAiCode">접속 코드</label>
-                <input id="singleAiCode" type="password" autocomplete="off" />
-              </div>
-              <label class="check-line ai-consent" for="singleAiConsent">
-                <input id="singleAiConsent" type="checkbox" />
-                관찰 메모·단원·학년·선택한 활동과 강점을 업스테이지 AI로 보내는 데 동의합니다(AI로 다듬기를 누를 때만 전송)
-              </label>
-            </div>
           </div>
         </section>
 
@@ -1221,8 +1282,10 @@
     const aiConsent = document.querySelector("#aiConsent");
     const singleAiBtn = document.querySelector("#singleAiBtn");
     const singleAiNote = document.querySelector("#singleAiNote");
-    const singleAiConsent = document.querySelector("#singleAiConsent");
-    const singleAiCode = document.querySelector("#singleAiCode");
+    const aiSettings = document.querySelector("#aiSettings");
+    const aiModeText = document.querySelector("#aiModeText");
+    const aiPersonalKeyInput = document.querySelector("#aiPersonalKey");
+    const aiRememberKey = document.querySelector("#aiRememberKey");
     const cautionWords = ["믿음이 좋", "신앙이 깊", "경건", "은혜를 많이", "하나님을 사랑", "기도를 잘", "모범적인 신앙", "신앙심", "독실", "회심", "구원의 확신", "성령"];
     const defaultUnits = [...unitSelect.options].map((option) => option.value);
     const activityMap = {
@@ -1921,8 +1984,10 @@
     let batchLoadToken = 0;
     const AI_ENDPOINT = "/api/refine";
     const AI_CODE_SESSION_KEY = "christian-subject-setak-ai-code";
+    const AI_KEY_STORAGE_KEY = "christian-subject-setak-ai-key";
     const AI_CONCURRENCY = 3;
-    let aiStatus = { enabled: false, requiresCode: false };
+    let aiStatus = { reachable: false, serverKey: false, requiresCode: false };
+    let currentTab = "batch";
     let aiRunning = false;
 
     function selectedValues(groupName) {
@@ -2626,7 +2691,7 @@
                     <span class="mini-actions">
                       <button class="mini" type="button" data-batch-copy="${index}">복사</button>
                       <button class="mini" type="button" data-batch-save="${index}">저장</button>
-                      ${item.evidence && aiStatus.enabled && !aiRunning ? `<button class="mini" type="button" data-batch-ai="${index}">${item.aiStatus === "done" ? "AI 다시" : "AI"}</button>` : ""}
+                      ${item.evidence && aiStatus.reachable && !aiRunning ? `<button class="mini" type="button" data-batch-ai="${index}">${item.aiStatus === "done" ? "AI 다시" : "AI"}</button>` : ""}
                       ${item.aiStatus === "done" ? `<button class="mini" type="button" data-batch-revert="${index}">되돌리기</button>` : ""}
                     </span>
                   </td>
@@ -3340,18 +3405,17 @@
     }
 
     function setAiUnavailable(reason) {
-      aiStatus = { enabled: false, requiresCode: false };
-      aiStatusPill.textContent = "사용 불가";
-      aiStatusPill.className = "pill";
+      aiStatus = { reachable: false, serverKey: false, requiresCode: false };
       const note = document.querySelector("#aiUnavailableText");
       note.textContent = reason;
       note.hidden = false;
       document.querySelector("#aiFields").hidden = true;
       singleAiBtn.hidden = true;
-      document.querySelector("#singleAiFields").hidden = true;
+      updateAiSettingsVisibility();
       updateAiButton();
     }
 
+    // 서버 키가 없어도 서버 함수만 있으면 개인 키로 쓸 수 있다.
     async function checkAiAvailability() {
       if (!/^https?:$/.test(location.protocol)) {
         setAiUnavailable("파일을 직접 열었을 때는 AI로 다듬기를 쓸 수 없습니다. 웹사이트 주소로 접속해 주세요.");
@@ -3360,72 +3424,116 @@
       try {
         const response = await fetch(AI_ENDPOINT, { cache: "no-store" });
         const data = await response.json();
-        if (!response.ok || !data.enabled) {
-          setAiUnavailable("서버에 업스테이지 API 키가 아직 설정되지 않았습니다.");
-          return;
-        }
-        aiStatus = { enabled: true, requiresCode: Boolean(data.requiresCode) };
+        if (!response.ok) throw new Error(`status ${response.status}`);
+        aiStatus = { reachable: true, serverKey: Boolean(data.enabled), requiresCode: Boolean(data.requiresCode) };
       } catch (error) {
         setAiUnavailable("AI 서버에 연결할 수 없습니다.");
         return;
       }
-      aiStatusPill.textContent = "사용 가능";
-      aiStatusPill.className = "pill good";
+      aiStatusPill.textContent = aiStatus.serverKey ? "사용 가능" : "개인 키 필요";
+      aiStatusPill.className = aiStatus.serverKey ? "pill good" : "pill";
+      aiModeText.textContent = !aiStatus.serverKey
+        ? "개인 업스테이지 API 키를 넣으면 쓸 수 있습니다."
+        : aiStatus.requiresCode
+          ? "학교 키는 접속 코드로, 또는 개인 API 키로 쓸 수 있습니다."
+          : "학교 키로 쓸 수 있고, 개인 API 키를 넣으면 그 키로 호출합니다.";
       document.querySelector("#aiUnavailableText").hidden = true;
       document.querySelector("#aiFields").hidden = false;
-      document.querySelector("#aiCodeField").hidden = !aiStatus.requiresCode;
+      document.querySelector("#aiCodeField").hidden = !(aiStatus.serverKey && aiStatus.requiresCode);
       singleAiBtn.hidden = false;
-      document.querySelector("#singleAiFields").hidden = false;
-      document.querySelector("#singleAiCodeField").hidden = !aiStatus.requiresCode;
-      let savedCode = "";
-      try {
-        savedCode = sessionStorage.getItem(AI_CODE_SESSION_KEY) || "";
-      } catch (error) {
-        savedCode = "";
-      }
-      aiAccessCodeInput.value = savedCode;
-      singleAiCode.value = savedCode;
+      loadAiCredentials();
+      updateAiSettingsVisibility();
       updateAiButton();
       renderBatchResults();
     }
 
-    function updateAiButton() {
-      aiRefineBtn.disabled = !aiStatus.enabled || aiRunning;
-      singleAiBtn.disabled = !aiStatus.enabled || aiRunning;
+    function updateAiSettingsVisibility() {
+      aiSettings.hidden = !aiStatus.reachable || currentTab === "saved";
     }
 
-    // 두 탭의 전송 동의와 접속 코드는 같은 값을 쓰도록 맞춘다.
-    [[aiConsent, singleAiConsent], [singleAiConsent, aiConsent]].forEach(([from, to]) => {
-      from.addEventListener("change", () => {
-        to.checked = from.checked;
-      });
-    });
-    [[aiAccessCodeInput, singleAiCode], [singleAiCode, aiAccessCodeInput]].forEach(([from, to]) => {
-      from.addEventListener("input", () => {
-        to.value = from.value;
-      });
-    });
+    function updateAiButton() {
+      aiRefineBtn.disabled = !aiStatus.reachable || aiRunning;
+      singleAiBtn.disabled = !aiStatus.reachable || aiRunning;
+    }
 
-    function aiPreflight(consentInput, codeInput) {
-      if (!aiStatus.enabled) {
+    // 접속 코드는 이 탭을 닫을 때까지, 개인 키는 '이 PC에 키 기억'을 켰을 때만 브라우저에 오래 남긴다.
+    function storeAiCredentials() {
+      const key = aiPersonalKeyInput.value.trim();
+      try {
+        sessionStorage.setItem(AI_CODE_SESSION_KEY, aiAccessCodeInput.value.trim());
+        if (aiRememberKey.checked && key) {
+          localStorage.setItem(AI_KEY_STORAGE_KEY, key);
+          sessionStorage.removeItem(AI_KEY_STORAGE_KEY);
+        } else {
+          localStorage.removeItem(AI_KEY_STORAGE_KEY);
+          if (key) sessionStorage.setItem(AI_KEY_STORAGE_KEY, key);
+          else sessionStorage.removeItem(AI_KEY_STORAGE_KEY);
+        }
+      } catch (error) {
+        // 저장소를 못 써도 입력칸의 값으로 이번 요청은 보낼 수 있다.
+      }
+    }
+
+    function loadAiCredentials() {
+      try {
+        const remembered = localStorage.getItem(AI_KEY_STORAGE_KEY) || "";
+        aiAccessCodeInput.value = sessionStorage.getItem(AI_CODE_SESSION_KEY) || "";
+        aiRememberKey.checked = Boolean(remembered);
+        aiPersonalKeyInput.value = remembered || sessionStorage.getItem(AI_KEY_STORAGE_KEY) || "";
+      } catch (error) {
+        // 저장된 값이 없으면 빈칸으로 둔다.
+      }
+    }
+
+    function clearAiCredentials() {
+      aiAccessCodeInput.value = "";
+      aiPersonalKeyInput.value = "";
+      aiRememberKey.checked = false;
+      aiConsent.checked = false;
+      try {
+        sessionStorage.removeItem(AI_CODE_SESSION_KEY);
+        sessionStorage.removeItem(AI_KEY_STORAGE_KEY);
+        localStorage.removeItem(AI_KEY_STORAGE_KEY);
+      } catch (error) {
+        // 저장소를 못 쓰면 지울 것도 없다.
+      }
+    }
+
+    aiRememberKey.addEventListener("change", storeAiCredentials);
+    aiPersonalKeyInput.addEventListener("change", storeAiCredentials);
+
+    // 개인 키가 있으면 그 키를, 없으면 접속 코드를 보낸다.
+    function credentialFields() {
+      const apiKey = aiPersonalKeyInput.value.trim();
+      return apiKey ? { apiKey } : { accessCode: aiAccessCodeInput.value.trim() };
+    }
+
+    function aiPreflight() {
+      const openSettingsAt = (input) => {
+        aiSettings.open = true;
+        input.focus();
+      };
+      if (!aiStatus.reachable) {
         showToast("지금은 AI로 다듬기를 쓸 수 없습니다");
         return false;
       }
-      if (!consentInput.checked) {
-        showToast("AI로 보내기 전에 전송 동의에 체크해 주세요");
-        consentInput.focus();
+      if (!aiConsent.checked) {
+        showToast("위쪽 'AI로 다듬기 설정'에서 전송 동의에 체크해 주세요");
+        openSettingsAt(aiConsent);
         return false;
       }
-      if (aiStatus.requiresCode && !codeInput.value.trim()) {
-        showToast("접속 코드를 입력해 주세요");
-        codeInput.focus();
+      const personalKey = aiPersonalKeyInput.value.trim();
+      if (!personalKey && !aiStatus.serverKey) {
+        showToast("개인 업스테이지 API 키를 입력해 주세요");
+        openSettingsAt(aiPersonalKeyInput);
         return false;
       }
-      try {
-        sessionStorage.setItem(AI_CODE_SESSION_KEY, codeInput.value.trim());
-      } catch (error) {
-        // 코드를 기억하지 못해도 이번 요청에는 지장이 없다.
+      if (!personalKey && aiStatus.requiresCode && !aiAccessCodeInput.value.trim()) {
+        showToast("접속 코드 또는 개인 API 키를 입력해 주세요");
+        openSettingsAt(aiAccessCodeInput);
+        return false;
       }
+      storeAiCredentials();
       return true;
     }
 
@@ -3434,7 +3542,7 @@
       const name = item.realName || "";
       const memo = name.length >= 2 ? item.evidence.split(name).join("학생") : item.evidence;
       return {
-        accessCode: aiAccessCodeInput.value.trim(),
+        ...credentialFields(),
         gradeLevel: item.gradeLevelFromFile ? item.gradeLevel : "",
         gradeYear: normalizeGradeYear(item.gradeYear),
         unitName: item.unitName,
@@ -3469,7 +3577,7 @@
 
     // 메모가 있는 학생만 AI로 다듬는다. 실패한 학생은 원래 문장을 그대로 둔다.
     async function refineWithAi(indices) {
-      if (aiRunning || !aiPreflight(aiConsent, aiAccessCodeInput)) return;
+      if (aiRunning || !aiPreflight()) return;
       if (!batchGenerated.length) generateBatch();
       const items = (indices || batchGenerated.map((_, index) => index))
         .map((index) => batchGenerated[index])
@@ -3517,7 +3625,7 @@
       const succeeded = finished - failed;
       aiProgress.textContent = `AI 다듬기 ${succeeded}명 완료${failed ? ` · ${failed}명 실패` : ""}`;
       if (rejected) {
-        showToast("접속 코드가 맞지 않아 멈췄습니다");
+        showToast("접속 코드나 API 키가 맞지 않아 멈췄습니다");
       } else if (failed) {
         showToast(`${succeeded}명을 다듬었고 ${failed}명은 실패했습니다. 실패한 학생은 원래 문장 그대로입니다`);
       } else {
@@ -3533,7 +3641,7 @@
     function singleAiPayload(data) {
       const strengths = data.strengths.length ? ` 교사가 체크한 강점: ${data.strengths.join(", ")}.` : "";
       return {
-        accessCode: singleAiCode.value.trim(),
+        ...credentialFields(),
         gradeLevel: data.gradeLevel,
         gradeYear: data.gradeYear,
         unitName: data.unitName,
@@ -3552,7 +3660,7 @@
         document.querySelector("#evidence").focus();
         return;
       }
-      if (!aiPreflight(singleAiConsent, singleAiCode)) return;
+      if (!aiPreflight()) return;
       aiRunning = true;
       updateAiButton();
       renderBatchResults();
@@ -3568,7 +3676,7 @@
       } catch (error) {
         singleAiNote.className = "help-text over-limit";
         singleAiNote.textContent = `AI 실패: ${error.message}`;
-        showToast(error.status === 401 ? "접속 코드가 맞지 않습니다" : "AI로 다듬지 못했습니다");
+        showToast(error.status === 401 ? "접속 코드나 API 키가 맞지 않습니다" : "AI로 다듬지 못했습니다");
       } finally {
         aiRunning = false;
         updateAiButton();
@@ -3634,7 +3742,7 @@
 
     document.querySelector("#wipeAllBtn").addEventListener("click", () => {
       const count = getRecords().length;
-      if (!window.confirm(`이 PC에 저장된 학생 메모 ${count}건과 지금 화면의 입력·생성 결과를 모두 지웁니다. 직접 추가한 단원/수업 주제는 남습니다. 계속할까요?`)) return;
+      if (!window.confirm(`이 PC에 저장된 학생 메모 ${count}건, 지금 화면의 입력·생성 결과, 기억해 둔 AI 접속 코드와 개인 API 키를 모두 지웁니다. 직접 추가한 단원/수업 주제는 남습니다. 계속할까요?`)) return;
       try {
         localStorage.removeItem(STORAGE_KEY);
       } catch (error) {
@@ -3643,15 +3751,7 @@
       clearBatchWork();
       resetSingleForm();
       classContextInput.value = "";
-      aiConsent.checked = false;
-      aiAccessCodeInput.value = "";
-      singleAiConsent.checked = false;
-      singleAiCode.value = "";
-      try {
-        sessionStorage.removeItem(AI_CODE_SESSION_KEY);
-      } catch (error) {
-        // 세션 저장소를 못 쓰면 지울 것도 없다.
-      }
+      clearAiCredentials();
       renderRecords();
       showToast("이 PC에 남은 학생 기록을 지웠습니다");
     });
@@ -3659,6 +3759,8 @@
     const tabs = [...document.querySelectorAll('[role="tab"]')];
 
     function selectTab(name, moveFocus = false) {
+      currentTab = name;
+      updateAiSettingsVisibility();
       tabs.forEach((tab) => {
         const active = tab.dataset.tab === name;
         tab.setAttribute("aria-selected", String(active));

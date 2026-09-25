@@ -1,17 +1,18 @@
-// 반 전체 생성의 'AI로 다듬기'가 부르는 서버 함수.
-// 교사 관찰 메모와 반 공통 수업 내용을 업스테이지 Solar로 보내 세특 문장으로 다듬는다.
-// API 키는 Vercel 환경변수에만 두고 브라우저로 보내지 않는다.
+// 'AI로 다듬기'가 부르는 서버 함수.
+// 교사 관찰 메모와 수업 맥락을 업스테이지 Solar로 보내 세특 문장으로 다듬는다.
+// 서버 키는 Vercel 환경변수에만 두고 브라우저로 보내지 않는다.
+// 교사가 개인 키를 보내면 그 키로 호출하며, 개인 키는 저장하거나 기록하지 않는다.
 //
 // 환경변수
-//   UPSTAGE_API_KEY          (필수) 업스테이지 콘솔에서 발급한 키
-//   ACCESS_CODE              (선택) 설정하면 이 코드를 입력한 사람만 호출할 수 있다
+//   UPSTAGE_API_KEY          (선택) 업스테이지 콘솔에서 발급한 서버 키. 없으면 개인 키로만 쓸 수 있다
+//   ACCESS_CODE              (선택) 서버 키를 쓸 때 이 코드를 입력한 사람만 호출할 수 있다
 //   UPSTAGE_MODEL            (선택) 기본값 solar-pro4
-//   UPSTAGE_REASONING_EFFORT (선택) 기본값 low
+//   UPSTAGE_REASONING_EFFORT (선택) 기본값 none. 추론을 켜면 답 없이 추론만 하다 끝날 수 있다
 const crypto = require("node:crypto");
 
 const UPSTAGE_URL = "https://api.upstage.ai/v1/chat/completions";
 const MODEL = process.env.UPSTAGE_MODEL || "solar-pro4";
-const REASONING_EFFORT = process.env.UPSTAGE_REASONING_EFFORT || "low";
+const REASONING_EFFORT = process.env.UPSTAGE_REASONING_EFFORT || "none";
 const UPSTREAM_TIMEOUT_MS = 50000;
 const MAX_MEMO_LENGTH = 600;
 const MAX_CONTEXT_LENGTH = 600;
@@ -89,6 +90,7 @@ function cleanOutput(text) {
   const leading = /^[\s"'“”‘’「」『』*-]+/;
   return String(text || "")
     .replace(/<think>[\s\S]*?<\/think>/g, "")
+    .replace(/<think>[\s\S]*$/, "")
     .replace(/[\r\n]+/g, " ")
     .replace(leading, "")
     .replace(/^(세특|세부능력 및 특기사항|결과)\s*[:：]\s*/, "")
@@ -96,6 +98,15 @@ function cleanOutput(text) {
     .replace(/[\s"'“”‘’「」『』*]+$/, "")
     .replace(/\s{2,}/g, " ")
     .trim();
+}
+
+// content가 문자열이 아니라 조각 배열로 올 때도 글자만 모은다.
+function messageText(message) {
+  const content = message && message.content;
+  if (Array.isArray(content)) {
+    return content.map((part) => (typeof part === "string" ? part : (part && part.text) || "")).join("");
+  }
+  return typeof content === "string" ? content : "";
 }
 
 function readBody(req) {
@@ -125,9 +136,6 @@ module.exports = async function handler(req, res) {
     res.setHeader("Allow", "GET, POST");
     return res.status(405).json({ error: "지원하지 않는 요청입니다." });
   }
-  if (!apiKey) {
-    return res.status(503).json({ error: "서버에 업스테이지 API 키가 설정되지 않았습니다." });
-  }
 
   let input;
   try {
@@ -135,8 +143,17 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return res.status(400).json({ error: "요청 형식이 올바르지 않습니다." });
   }
-  if (accessCode && !sameSecret(input.accessCode, accessCode)) {
-    return res.status(401).json({ error: "접속 코드가 맞지 않습니다." });
+  const personalKey = String(input.apiKey || "").trim();
+  if (personalKey && !/^[\w.-]{10,200}$/.test(personalKey)) {
+    return res.status(400).json({ error: "개인 API 키 형식이 올바르지 않습니다." });
+  }
+  if (!personalKey) {
+    if (!apiKey) {
+      return res.status(503).json({ error: "서버에 API 키가 없습니다. 개인 업스테이지 API 키를 입력해 주세요." });
+    }
+    if (accessCode && !sameSecret(input.accessCode, accessCode)) {
+      return res.status(401).json({ error: "접속 코드가 맞지 않습니다." });
+    }
   }
   if (!clean(input.memo, MAX_MEMO_LENGTH)) {
     return res.status(400).json({ error: "관찰 메모가 없는 학생은 AI로 다듬지 않습니다." });
@@ -146,7 +163,7 @@ module.exports = async function handler(req, res) {
   try {
     upstream = await fetch(UPSTAGE_URL, {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${personalKey || apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: MODEL,
         messages: [
@@ -154,7 +171,7 @@ module.exports = async function handler(req, res) {
           { role: "user", content: buildUserPrompt(input) }
         ],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_tokens: 3000,
         reasoning_effort: REASONING_EFFORT
       }),
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
@@ -167,8 +184,16 @@ module.exports = async function handler(req, res) {
   if (!upstream.ok) {
     // 학생 메모가 로그에 남지 않도록 상태 코드만 기록한다.
     console.error(`Upstage API error: ${upstream.status}`);
-    const message = upstream.status === 429 ? "AI 요청이 몰렸습니다. 잠시 뒤 다시 시도해 주세요." : `AI 서버 오류(${upstream.status})`;
-    return res.status(502).json({ error: message });
+    if (upstream.status === 401 || upstream.status === 403) {
+      return personalKey
+        ? res.status(401).json({ error: "입력한 개인 API 키가 올바르지 않거나 권한이 없습니다." })
+        : res.status(502).json({ error: "서버에 설정된 API 키가 올바르지 않습니다. 관리자에게 알려 주세요." });
+    }
+    const messages = {
+      402: "업스테이지 계정의 크레딧(잔액)이 부족합니다.",
+      429: "AI 요청이 몰렸거나 사용 한도에 걸렸습니다. 잠시 뒤 다시 시도해 주세요."
+    };
+    return res.status(502).json({ error: messages[upstream.status] || `AI 서버 오류(${upstream.status})` });
   }
 
   let data;
@@ -177,9 +202,13 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return res.status(502).json({ error: "AI 응답을 읽지 못했습니다." });
   }
-  const text = cleanOutput(data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content);
+  const choice = (data && data.choices && data.choices[0]) || {};
+  const text = cleanOutput(messageText(choice.message));
   if (!text) {
-    return res.status(502).json({ error: "AI가 빈 응답을 보냈습니다." });
+    // 원인 파악용으로 종료 사유와 토큰 수만 기록한다(내용은 남기지 않는다).
+    console.error(`Upstage empty answer: finish_reason=${choice.finish_reason}, usage=${JSON.stringify(data && data.usage)}`);
+    const reason = choice.finish_reason === "length" ? "길이 제한에 걸림" : choice.finish_reason || "알 수 없음";
+    return res.status(502).json({ error: `AI가 빈 응답을 보냈습니다(종료 사유: ${reason}).` });
   }
   return res.status(200).json({ text, model: MODEL });
 };
