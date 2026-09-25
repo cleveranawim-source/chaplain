@@ -617,8 +617,13 @@
       flex: 1 1 320px;
     }
 
-    .ai-row #aiCodeField input {
+    .ai-row #aiCodeField input,
+    .ai-row #singleAiCodeField input {
       width: 180px;
+    }
+
+    .single-ai {
+      margin-top: 12px;
     }
 
     .check-line.ai-consent {
@@ -763,7 +768,8 @@
         grid-template-columns: 1fr;
       }
 
-      .ai-row #aiCodeField input {
+      .ai-row #aiCodeField input,
+      .ai-row #singleAiCodeField input {
         width: 100%;
       }
 
@@ -838,7 +844,7 @@
         <p>중학교와 고등학교 종교 수업의 관찰 근거를 바탕으로 생활기록부 교과세부특기사항 초안을 만듭니다. 신앙의 깊이를 평가하지 않고, 수업에서 드러난 이해, 해석, 성찰, 표현, 공동체 태도를 중심으로 정리합니다.</p>
       </div>
       <aside class="privacy-note">
-        입력한 내용은 이 브라우저 안에서만 처리됩니다. 반 전체 생성의 'AI로 다듬기'를 직접 실행할 때만 메모·단원·학년·수업 내용이 업스테이지 AI로 전송됩니다(성명·반/번호 제외). 저장한 메모에는 학생 이름을 남기지 않으며, 30일이 지나면 자동으로 지워집니다. 공용 PC라면 작업을 마친 뒤 아래 버튼을 눌러 주세요.
+        입력한 내용은 이 브라우저 안에서만 처리됩니다. 'AI로 다듬기'를 직접 실행할 때만 메모·단원·학년·수업 내용이 업스테이지 AI로 전송됩니다(성명·반/번호 제외). 저장한 메모에는 학생 이름을 남기지 않으며, 30일이 지나면 자동으로 지워집니다. 공용 PC라면 작업을 마친 뒤 아래 버튼을 눌러 주세요.
         <button class="mini privacy-clear" type="button" id="wipeAllBtn">이 PC에서 모두 지우기</button>
       </aside>
     </header>
@@ -995,7 +1001,7 @@
       <form class="panel input-panel" id="setakForm">
         <div class="panel-header">
           <h2>관찰 근거 입력</h2>
-          <span class="pill">외부 전송 없음</span>
+          <span class="pill">AI 전송은 선택 사항</span>
         </div>
         <div class="panel-body form-grid">
           <div class="two-col">
@@ -1127,10 +1133,22 @@
           </div>
           <div class="panel-body">
             <div class="result-box" id="resultText">왼쪽에서 관찰 근거를 입력한 뒤 초안 만들기를 누르세요.</div>
+            <p class="help-text" id="singleAiNote" role="status" aria-live="polite" hidden></p>
             <div class="toolbar">
               <button class="btn blue" type="button" id="copyBtn">복사</button>
               <button class="btn" type="button" id="saveBtn">학생 메모 저장</button>
               <button class="btn" type="button" id="variantBtn">다른 표현</button>
+              <button class="btn navy" type="button" id="singleAiBtn" hidden>AI로 다듬기</button>
+            </div>
+            <div class="ai-row single-ai" id="singleAiFields" hidden>
+              <div id="singleAiCodeField" hidden>
+                <label for="singleAiCode">접속 코드</label>
+                <input id="singleAiCode" type="password" autocomplete="off" />
+              </div>
+              <label class="check-line ai-consent" for="singleAiConsent">
+                <input id="singleAiConsent" type="checkbox" />
+                관찰 메모·단원·학년·선택한 활동과 강점을 업스테이지 AI로 보내는 데 동의합니다(AI로 다듬기를 누를 때만 전송)
+              </label>
             </div>
           </div>
         </section>
@@ -1201,6 +1219,10 @@
     const classContextInput = document.querySelector("#classContext");
     const aiAccessCodeInput = document.querySelector("#aiAccessCode");
     const aiConsent = document.querySelector("#aiConsent");
+    const singleAiBtn = document.querySelector("#singleAiBtn");
+    const singleAiNote = document.querySelector("#singleAiNote");
+    const singleAiConsent = document.querySelector("#singleAiConsent");
+    const singleAiCode = document.querySelector("#singleAiCode");
     const cautionWords = ["믿음이 좋", "신앙이 깊", "경건", "은혜를 많이", "하나님을 사랑", "기도를 잘", "모범적인 신앙", "신앙심", "독실", "회심", "구원의 확신", "성령"];
     const defaultUnits = [...unitSelect.options].map((option) => option.value);
     const activityMap = {
@@ -2150,6 +2172,7 @@
     }
 
     function updateResult() {
+      singleAiNote.hidden = true;
       const sentence = makeSentence();
       resultText.textContent = sentence;
       inspectText(sentence);
@@ -3136,6 +3159,7 @@
 
     function resetSingleForm() {
       form.reset();
+      singleAiNote.hidden = true;
       document.querySelectorAll("[data-group] input").forEach((item) => item.checked = false);
       resultText.textContent = "왼쪽에서 관찰 근거를 입력한 뒤 초안 만들기를 누르세요.";
       inspectText("");
@@ -3323,6 +3347,8 @@
       note.textContent = reason;
       note.hidden = false;
       document.querySelector("#aiFields").hidden = true;
+      singleAiBtn.hidden = true;
+      document.querySelector("#singleAiFields").hidden = true;
       updateAiButton();
     }
 
@@ -3348,17 +3374,59 @@
       document.querySelector("#aiUnavailableText").hidden = true;
       document.querySelector("#aiFields").hidden = false;
       document.querySelector("#aiCodeField").hidden = !aiStatus.requiresCode;
+      singleAiBtn.hidden = false;
+      document.querySelector("#singleAiFields").hidden = false;
+      document.querySelector("#singleAiCodeField").hidden = !aiStatus.requiresCode;
+      let savedCode = "";
       try {
-        aiAccessCodeInput.value = sessionStorage.getItem(AI_CODE_SESSION_KEY) || "";
+        savedCode = sessionStorage.getItem(AI_CODE_SESSION_KEY) || "";
       } catch (error) {
-        aiAccessCodeInput.value = "";
+        savedCode = "";
       }
+      aiAccessCodeInput.value = savedCode;
+      singleAiCode.value = savedCode;
       updateAiButton();
       renderBatchResults();
     }
 
     function updateAiButton() {
       aiRefineBtn.disabled = !aiStatus.enabled || aiRunning;
+      singleAiBtn.disabled = !aiStatus.enabled || aiRunning;
+    }
+
+    // 두 탭의 전송 동의와 접속 코드는 같은 값을 쓰도록 맞춘다.
+    [[aiConsent, singleAiConsent], [singleAiConsent, aiConsent]].forEach(([from, to]) => {
+      from.addEventListener("change", () => {
+        to.checked = from.checked;
+      });
+    });
+    [[aiAccessCodeInput, singleAiCode], [singleAiCode, aiAccessCodeInput]].forEach(([from, to]) => {
+      from.addEventListener("input", () => {
+        to.value = from.value;
+      });
+    });
+
+    function aiPreflight(consentInput, codeInput) {
+      if (!aiStatus.enabled) {
+        showToast("지금은 AI로 다듬기를 쓸 수 없습니다");
+        return false;
+      }
+      if (!consentInput.checked) {
+        showToast("AI로 보내기 전에 전송 동의에 체크해 주세요");
+        consentInput.focus();
+        return false;
+      }
+      if (aiStatus.requiresCode && !codeInput.value.trim()) {
+        showToast("접속 코드를 입력해 주세요");
+        codeInput.focus();
+        return false;
+      }
+      try {
+        sessionStorage.setItem(AI_CODE_SESSION_KEY, codeInput.value.trim());
+      } catch (error) {
+        // 코드를 기억하지 못해도 이번 요청에는 지장이 없다.
+      }
+      return true;
     }
 
     // 성명·반/번호·원본 행은 보내지 않는다. 메모 안에 학생 이름이 있으면 '학생'으로 바꾼다.
@@ -3379,11 +3447,11 @@
       };
     }
 
-    async function requestRefinement(item) {
+    async function requestRefinement(payload) {
       const response = await fetch(AI_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(aiPayload(item))
+        body: JSON.stringify(payload)
       });
       let data = {};
       try {
@@ -3401,21 +3469,7 @@
 
     // 메모가 있는 학생만 AI로 다듬는다. 실패한 학생은 원래 문장을 그대로 둔다.
     async function refineWithAi(indices) {
-      if (aiRunning) return;
-      if (!aiStatus.enabled) {
-        showToast("지금은 AI로 다듬기를 쓸 수 없습니다");
-        return;
-      }
-      if (!aiConsent.checked) {
-        showToast("AI로 보내기 전에 전송 동의에 체크해 주세요");
-        aiConsent.focus();
-        return;
-      }
-      if (aiStatus.requiresCode && !aiAccessCodeInput.value.trim()) {
-        showToast("접속 코드를 입력해 주세요");
-        aiAccessCodeInput.focus();
-        return;
-      }
+      if (aiRunning || !aiPreflight(aiConsent, aiAccessCodeInput)) return;
       if (!batchGenerated.length) generateBatch();
       const items = (indices || batchGenerated.map((_, index) => index))
         .map((index) => batchGenerated[index])
@@ -3423,11 +3477,6 @@
       if (!items.length) {
         showToast("관찰 메모가 있는 학생이 없습니다. 메모가 있어야 AI로 다듬을 수 있습니다");
         return;
-      }
-      try {
-        sessionStorage.setItem(AI_CODE_SESSION_KEY, aiAccessCodeInput.value.trim());
-      } catch (error) {
-        // 코드를 기억하지 못해도 이번 요청에는 지장이 없다.
       }
       items.forEach((item) => {
         item.aiStatus = "pending";
@@ -3444,7 +3493,7 @@
         while (queue.length && !rejected) {
           const item = queue.shift();
           try {
-            item.text = await requestRefinement(item);
+            item.text = await requestRefinement(aiPayload(item));
             item.aiStatus = "done";
           } catch (error) {
             item.aiStatus = "error";
@@ -3477,6 +3526,57 @@
     }
 
     aiRefineBtn.addEventListener("click", () => refineWithAi());
+
+    const SINGLE_LENGTH_TARGETS = { short: 300, standard: 400, long: 500 };
+
+    // 개별 학생: 폼의 관찰 메모에 교사가 체크한 강점을 붙여 보내고, 체크한 활동은 수업 맥락으로 보낸다.
+    function singleAiPayload(data) {
+      const strengths = data.strengths.length ? ` 교사가 체크한 강점: ${data.strengths.join(", ")}.` : "";
+      return {
+        accessCode: singleAiCode.value.trim(),
+        gradeLevel: data.gradeLevel,
+        gradeYear: data.gradeYear,
+        unitName: data.unitName,
+        classContext: data.activities.length ? `수업 활동: ${data.activities.join(", ")}` : "",
+        toneMode: data.toneMode,
+        lengthTarget: SINGLE_LENGTH_TARGETS[data.lengthMode] || 400,
+        memo: `${memoSentence(data.evidence)}${strengths}`
+      };
+    }
+
+    async function refineSingleWithAi() {
+      if (aiRunning) return;
+      const data = getFormState();
+      if (!data.evidence) {
+        showToast("관찰 메모를 입력해야 AI로 다듬을 수 있습니다");
+        document.querySelector("#evidence").focus();
+        return;
+      }
+      if (!aiPreflight(singleAiConsent, singleAiCode)) return;
+      aiRunning = true;
+      updateAiButton();
+      renderBatchResults();
+      singleAiNote.hidden = false;
+      singleAiNote.className = "help-text";
+      singleAiNote.textContent = "AI가 다듬는 중입니다…";
+      try {
+        const text = await requestRefinement(singleAiPayload(data));
+        resultText.textContent = text;
+        inspectText(text);
+        singleAiNote.textContent = "AI로 다듬은 문장입니다. 왼쪽 관찰 메모와 비교해 확인해 주세요. '초안 만들기'나 '다른 표현'을 누르면 원래 방식의 문장으로 돌아갑니다.";
+        showToast("AI로 다듬었습니다. 메모와 비교해 확인해 주세요");
+      } catch (error) {
+        singleAiNote.className = "help-text over-limit";
+        singleAiNote.textContent = `AI 실패: ${error.message}`;
+        showToast(error.status === 401 ? "접속 코드가 맞지 않습니다" : "AI로 다듬지 못했습니다");
+      } finally {
+        aiRunning = false;
+        updateAiButton();
+        renderBatchResults();
+      }
+    }
+
+    singleAiBtn.addEventListener("click", refineSingleWithAi);
 
     document.querySelector("#batchClearBtn").addEventListener("click", () => {
       clearBatchWork();
@@ -3545,6 +3645,8 @@
       classContextInput.value = "";
       aiConsent.checked = false;
       aiAccessCodeInput.value = "";
+      singleAiConsent.checked = false;
+      singleAiCode.value = "";
       try {
         sessionStorage.removeItem(AI_CODE_SESSION_KEY);
       } catch (error) {
