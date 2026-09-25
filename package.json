@@ -1,0 +1,9 @@
+{
+  "name": "chaplain",
+  "private": true,
+  "description": "기독교 학교 종교과목 세특 도우미 (정적 페이지 + AI 다듬기 서버 함수)",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "openai": "^7.23.0"
+  }
+}

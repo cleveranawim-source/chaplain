@@ -1,19 +1,31 @@
 // 'AI로 다듬기'가 부르는 서버 함수.
-// 교사 관찰 메모와 수업 맥락을 업스테이지 Solar로 보내 세특 문장으로 다듬는다.
-// 서버 키는 Vercel 환경변수에만 두고 브라우저로 보내지 않는다.
-// 교사가 개인 키를 보내면 그 키로 호출하며, 개인 키는 저장하거나 기록하지 않는다.
+// 교사 관찰 메모와 수업 맥락을 AI로 보내 세특 문장으로 다듬는다.
+//   - 학교(서버) 키: 업스테이지 Solar. 키는 Vercel 환경변수에만 두고 브라우저로 보내지 않는다.
+//   - 개인 키: GPT(OpenAI) 또는 Claude(Anthropic)만 받는다. 키 앞부분으로 회사를 가리며, 저장하거나 기록하지 않는다.
 //
 // 환경변수
-//   UPSTAGE_API_KEY          (선택) 업스테이지 콘솔에서 발급한 서버 키. 없으면 개인 키로만 쓸 수 있다
+//   UPSTAGE_API_KEY          (선택) 학교(서버) 키. 없으면 개인 키로만 쓸 수 있다
 //   ACCESS_CODE              (선택) 서버 키를 쓸 때 이 코드를 입력한 사람만 호출할 수 있다
 //   UPSTAGE_MODEL            (선택) 기본값 solar-pro4
 //   UPSTAGE_REASONING_EFFORT (선택) 기본값 none. 추론을 켜면 답 없이 추론만 하다 끝날 수 있다
+//   OPENAI_MODEL             (선택) 개인 GPT 키로 쓸 모델. 기본값 gpt-6-sol
+//   ANTHROPIC_MODEL          (선택) 개인 Claude 키로 쓸 모델. 기본값 claude-opus-5
 const crypto = require("node:crypto");
+const Anthropic = require("@anthropic-ai/sdk");
+const OpenAI = require("openai");
 
 const UPSTAGE_URL = "https://api.upstage.ai/v1/chat/completions";
-const MODEL = process.env.UPSTAGE_MODEL || "solar-pro4";
-const REASONING_EFFORT = process.env.UPSTAGE_REASONING_EFFORT || "none";
+const MODELS = {
+  upstage: process.env.UPSTAGE_MODEL || "solar-pro4",
+  openai: process.env.OPENAI_MODEL || "gpt-6-sol",
+  anthropic: process.env.ANTHROPIC_MODEL || "claude-opus-5"
+};
+const UPSTAGE_REASONING_EFFORT = process.env.UPSTAGE_REASONING_EFFORT || "none";
+// 서버 기능으로 '거절 시 다른 모델로 다시 시도'를 지원하는 Claude 모델
+const CLAUDE_FALLBACK_MODELS = new Set(["claude-opus-5", "claude-opus-5-5", "claude-fable-5-1"]);
 const UPSTREAM_TIMEOUT_MS = 50000;
+// SDK는 실패 시 한 번 더 시도하므로 두 번을 합쳐도 함수 제한 시간(60초) 안에 끝나게 한다.
+const SDK_TIMEOUT_MS = 25000;
 const MAX_MEMO_LENGTH = 600;
 const MAX_CONTEXT_LENGTH = 600;
 
@@ -116,6 +128,131 @@ function readBody(req) {
   return body;
 }
 
+class RefineError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+
+// 개인 키는 앞부분으로 회사를 가린다. Claude 키(sk-ant-)도 sk-로 시작하므로 먼저 본다.
+function personalProvider(key) {
+  if (key.startsWith("sk-ant-")) return "anthropic";
+  if (key.startsWith("sk-")) return "openai";
+  return "";
+}
+
+function emptyAnswer(provider, reason, usage) {
+  // 원인 파악용으로 종료 사유와 토큰 수만 기록한다(내용은 남기지 않는다).
+  console.error(`${provider} empty answer: reason=${reason}, usage=${JSON.stringify(usage)}`);
+  const label = reason === "length" || reason === "max_tokens" ? "길이 제한에 걸림" : reason || "알 수 없음";
+  return new RefineError(502, `AI가 빈 응답을 보냈습니다(종료 사유: ${label}).`);
+}
+
+async function callUpstage(key, userPrompt) {
+  let upstream;
+  try {
+    upstream = await fetch(UPSTAGE_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODELS.upstage,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 3000,
+        reasoning_effort: UPSTAGE_REASONING_EFFORT
+      }),
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+    });
+  } catch (error) {
+    const timedOut = error && error.name === "TimeoutError";
+    throw new RefineError(timedOut ? 504 : 502, timedOut ? "AI 응답이 너무 오래 걸립니다." : "AI 서버에 연결하지 못했습니다.");
+  }
+  if (!upstream.ok) {
+    // 학생 메모가 로그에 남지 않도록 상태 코드만 기록한다.
+    console.error(`Upstage API error: ${upstream.status}`);
+    const messages = {
+      401: "서버에 설정된 API 키가 올바르지 않습니다. 관리자에게 알려 주세요.",
+      403: "서버에 설정된 API 키가 올바르지 않습니다. 관리자에게 알려 주세요.",
+      402: "업스테이지 계정의 크레딧(잔액)이 부족합니다.",
+      429: "AI 요청이 몰렸거나 사용 한도에 걸렸습니다. 잠시 뒤 다시 시도해 주세요."
+    };
+    throw new RefineError(502, messages[upstream.status] || `AI 서버 오류(${upstream.status})`);
+  }
+  let data;
+  try {
+    data = await upstream.json();
+  } catch (error) {
+    throw new RefineError(502, "AI 응답을 읽지 못했습니다.");
+  }
+  const choice = (data && data.choices && data.choices[0]) || {};
+  const text = cleanOutput(messageText(choice.message));
+  if (!text) throw emptyAnswer("Upstage", choice.finish_reason, data && data.usage);
+  return text;
+}
+
+async function callOpenAI(key, userPrompt) {
+  const client = new OpenAI({ apiKey: key, timeout: SDK_TIMEOUT_MS, maxRetries: 1 });
+  const completion = await client.chat.completions.create({
+    model: MODELS.openai,
+    messages: [
+      { role: "developer", content: SYSTEM_PROMPT },
+      { role: "user", content: userPrompt }
+    ],
+    reasoning_effort: "low",
+    max_completion_tokens: 16000
+  });
+  const choice = completion.choices[0] || {};
+  if (choice.message && choice.message.refusal) throw new RefineError(502, "AI가 요청을 거절했습니다.");
+  const text = cleanOutput(messageText(choice.message));
+  if (!text) throw emptyAnswer("OpenAI", choice.finish_reason, completion.usage);
+  return text;
+}
+
+async function callAnthropic(key, userPrompt) {
+  const client = new Anthropic({ apiKey: key, timeout: SDK_TIMEOUT_MS, maxRetries: 1 });
+  const request = {
+    model: MODELS.anthropic,
+    max_tokens: 16000,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: userPrompt }],
+    // 짧은 문장 다듬기라 깊게 생각할 필요가 없다.
+    output_config: { effort: "low" }
+  };
+  // 안전 분류기가 거절하면 서버가 알맞은 다른 모델로 한 번 더 시도한다.
+  const response = CLAUDE_FALLBACK_MODELS.has(MODELS.anthropic)
+    ? await client.beta.messages.create({ ...request, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" })
+    : await client.messages.create(request);
+  if (response.stop_reason === "refusal") throw new RefineError(502, "AI가 요청을 거절했습니다(안전 정책).");
+  const text = cleanOutput(response.content.filter((block) => block.type === "text").map((block) => block.text).join(""));
+  if (!text) throw emptyAnswer("Anthropic", response.stop_reason, response.usage);
+  return text;
+}
+
+const CALLERS = { upstage: callUpstage, openai: callOpenAI, anthropic: callAnthropic };
+
+// SDK의 오류 종류를 교사가 알아볼 수 있는 안내로 바꾼다. 학생 메모는 기록하지 않는다.
+function sdkErrorToRefineError(error, provider) {
+  const sdk = provider === "anthropic" ? Anthropic : OpenAI;
+  if (error instanceof sdk.AuthenticationError || error instanceof sdk.PermissionDeniedError) {
+    return new RefineError(401, "입력한 개인 API 키가 올바르지 않거나 권한이 없습니다.");
+  }
+  if (error instanceof sdk.RateLimitError) {
+    return new RefineError(502, "AI 요청이 몰렸거나 사용 한도·잔액이 부족합니다. 잠시 뒤 다시 시도하거나 계정 잔액을 확인해 주세요.");
+  }
+  if (error instanceof sdk.APIConnectionTimeoutError) return new RefineError(504, "AI 응답이 너무 오래 걸립니다.");
+  if (error instanceof sdk.APIConnectionError) return new RefineError(502, "AI 서버에 연결하지 못했습니다.");
+  if (error instanceof sdk.APIError) {
+    // 두 SDK 모두 응답 본문을 error.error에 담는다(Anthropic은 한 번 더 감싼다).
+    const detail = (error.error && error.error.error && error.error.error.message) || (error.error && error.error.message) || error.message;
+    return new RefineError(502, `AI 서버 오류(${error.status}): ${String(detail).slice(0, 160)}`);
+  }
+  return null;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   const apiKey = process.env.UPSTAGE_API_KEY || "";
@@ -126,7 +263,8 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       enabled: Boolean(apiKey),
       requiresCode: Boolean(accessCode),
-      model: MODEL,
+      model: MODELS.upstage,
+      personalModels: { openai: MODELS.openai, anthropic: MODELS.anthropic },
       environment: process.env.VERCEL_ENV || "local",
       branch: process.env.VERCEL_GIT_COMMIT_REF || "",
       commit: (process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 7)
@@ -144,12 +282,15 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: "요청 형식이 올바르지 않습니다." });
   }
   const personalKey = String(input.apiKey || "").trim();
-  if (personalKey && !/^[\w.-]{10,200}$/.test(personalKey)) {
-    return res.status(400).json({ error: "개인 API 키 형식이 올바르지 않습니다." });
-  }
-  if (!personalKey) {
+  let provider = "upstage";
+  if (personalKey) {
+    provider = /^[\w.-]{10,300}$/.test(personalKey) ? personalProvider(personalKey) : "";
+    if (!provider) {
+      return res.status(400).json({ error: "개인 키는 GPT(OpenAI, sk-로 시작) 또는 Claude(Anthropic, sk-ant-로 시작) 키만 쓸 수 있습니다." });
+    }
+  } else {
     if (!apiKey) {
-      return res.status(503).json({ error: "서버에 API 키가 없습니다. 개인 업스테이지 API 키를 입력해 주세요." });
+      return res.status(503).json({ error: "서버에 학교 키가 없습니다. 개인 GPT 또는 Claude API 키를 입력해 주세요." });
     }
     if (accessCode && !sameSecret(input.accessCode, accessCode)) {
       return res.status(401).json({ error: "접속 코드가 맞지 않습니다." });
@@ -159,56 +300,16 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: "관찰 메모가 없는 학생은 AI로 다듬지 않습니다." });
   }
 
-  let upstream;
   try {
-    upstream = await fetch(UPSTAGE_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${personalKey || apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: buildUserPrompt(input) }
-        ],
-        temperature: 0.7,
-        max_tokens: 3000,
-        reasoning_effort: REASONING_EFFORT
-      }),
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
-    });
+    const text = await CALLERS[provider](personalKey || apiKey, buildUserPrompt(input));
+    return res.status(200).json({ text, model: MODELS[provider] });
   } catch (error) {
-    const timedOut = error && error.name === "TimeoutError";
-    return res.status(timedOut ? 504 : 502).json({ error: timedOut ? "AI 응답이 너무 오래 걸립니다." : "AI 서버에 연결하지 못했습니다." });
-  }
-
-  if (!upstream.ok) {
-    // 학생 메모가 로그에 남지 않도록 상태 코드만 기록한다.
-    console.error(`Upstage API error: ${upstream.status}`);
-    if (upstream.status === 401 || upstream.status === 403) {
-      return personalKey
-        ? res.status(401).json({ error: "입력한 개인 API 키가 올바르지 않거나 권한이 없습니다." })
-        : res.status(502).json({ error: "서버에 설정된 API 키가 올바르지 않습니다. 관리자에게 알려 주세요." });
+    const known = error instanceof RefineError ? error : sdkErrorToRefineError(error, provider);
+    if (!known) {
+      console.error(`${provider} unexpected error: ${error && error.name}`);
+      return res.status(502).json({ error: "AI를 부르는 중 오류가 났습니다." });
     }
-    const messages = {
-      402: "업스테이지 계정의 크레딧(잔액)이 부족합니다.",
-      429: "AI 요청이 몰렸거나 사용 한도에 걸렸습니다. 잠시 뒤 다시 시도해 주세요."
-    };
-    return res.status(502).json({ error: messages[upstream.status] || `AI 서버 오류(${upstream.status})` });
+    if (!(error instanceof RefineError)) console.error(`${provider} API error: ${error.status || error.name}`);
+    return res.status(known.status).json({ error: known.message });
   }
-
-  let data;
-  try {
-    data = await upstream.json();
-  } catch (error) {
-    return res.status(502).json({ error: "AI 응답을 읽지 못했습니다." });
-  }
-  const choice = (data && data.choices && data.choices[0]) || {};
-  const text = cleanOutput(messageText(choice.message));
-  if (!text) {
-    // 원인 파악용으로 종료 사유와 토큰 수만 기록한다(내용은 남기지 않는다).
-    console.error(`Upstage empty answer: finish_reason=${choice.finish_reason}, usage=${JSON.stringify(data && data.usage)}`);
-    const reason = choice.finish_reason === "length" ? "길이 제한에 걸림" : choice.finish_reason || "알 수 없음";
-    return res.status(502).json({ error: `AI가 빈 응답을 보냈습니다(종료 사유: ${reason}).` });
-  }
-  return res.status(200).json({ text, model: MODEL });
 };
