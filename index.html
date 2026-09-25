@@ -212,6 +212,7 @@
     }
 
     input[type="text"],
+    input[type="password"],
     select,
     textarea {
       width: 100%;
@@ -599,6 +600,63 @@
       flex-wrap: nowrap;
     }
 
+    .ai-fields {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .ai-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .ai-row .ai-consent {
+      flex: 1 1 320px;
+    }
+
+    .ai-row #aiCodeField input {
+      width: 180px;
+    }
+
+    .check-line.ai-consent {
+      padding-top: 0;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 6px 6px 0 0;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: #eef1f5;
+      color: var(--muted);
+    }
+
+    .tag.ai {
+      background: var(--green-soft);
+      color: #24406f;
+    }
+
+    .tag.warn {
+      background: var(--rose-soft);
+      color: #8a3030;
+    }
+
+    .memo-ref {
+      margin-top: 6px;
+      padding: 6px 9px;
+      border-left: 3px solid var(--line);
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
     .help-text.over-limit {
       color: #8a3030;
       font-weight: 700;
@@ -705,6 +763,10 @@
         grid-template-columns: 1fr;
       }
 
+      .ai-row #aiCodeField input {
+        width: 100%;
+      }
+
       .check-line {
         padding-top: 0;
       }
@@ -772,11 +834,11 @@
   <main class="app-shell">
     <header class="topbar">
       <div class="title-block">
-        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v9 · 2026-09-25</span></h1>
+        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v10 · 2026-09-25</span></h1>
         <p>중학교와 고등학교 종교 수업의 관찰 근거를 바탕으로 생활기록부 교과세부특기사항 초안을 만듭니다. 신앙의 깊이를 평가하지 않고, 수업에서 드러난 이해, 해석, 성찰, 표현, 공동체 태도를 중심으로 정리합니다.</p>
       </div>
       <aside class="privacy-note">
-        입력한 내용은 외부로 전송되지 않고 이 브라우저 안에서만 처리됩니다. 저장한 메모에는 학생 이름을 남기지 않으며, 30일이 지나면 자동으로 지워집니다. 공용 PC라면 작업을 마친 뒤 아래 버튼을 눌러 주세요.
+        입력한 내용은 이 브라우저 안에서만 처리됩니다. 반 전체 생성의 'AI로 다듬기'를 직접 실행할 때만 메모·단원·학년·수업 내용이 업스테이지 AI로 전송됩니다(성명·반/번호 제외). 저장한 메모에는 학생 이름을 남기지 않으며, 30일이 지나면 자동으로 지워집니다. 공용 PC라면 작업을 마친 뒤 아래 버튼을 눌러 주세요.
         <button class="mini privacy-clear" type="button" id="wipeAllBtn">이 PC에서 모두 지우기</button>
       </aside>
     </header>
@@ -891,11 +953,35 @@
               </select>
             </div>
           </div>
+          <div class="batch-unit-box ai-box">
+            <div class="label">AI로 다듬기 <span class="pill" id="aiStatusPill">확인 중</span></div>
+            <p class="help-text" style="margin-top: 3px;">일괄 생성한 뒤, 관찰 메모가 있는 학생만 AI(업스테이지 Solar)가 '반 공통 수업 내용 + 그 학생의 메모'로 세특 문장을 다시 씁니다. 메모가 없는 학생은 지금 방식 그대로 두고 '메모 없음'으로 표시합니다. AI 결과는 반드시 메모와 비교해 확인해 주세요.</p>
+            <p class="help-text" id="aiUnavailableText" hidden></p>
+            <div class="ai-fields" id="aiFields" hidden>
+              <div>
+                <label for="classContext">반 공통 수업 내용</label>
+                <textarea id="classContext" placeholder="예: 선한 사마리아인 본문을 읽고 '나의 이웃은 누구인가'를 주제로 모둠 토론과 성찰 글쓰기를 함."></textarea>
+                <p class="help-text">반 전체가 함께 한 활동만 적어 주세요. 모든 학생의 글에 수업 맥락으로 쓰입니다.</p>
+              </div>
+              <div class="ai-row">
+                <div id="aiCodeField" hidden>
+                  <label for="aiAccessCode">접속 코드</label>
+                  <input id="aiAccessCode" type="password" autocomplete="off" />
+                </div>
+                <label class="check-line ai-consent" for="aiConsent">
+                  <input id="aiConsent" type="checkbox" />
+                  메모·단원·학년·수업 내용을 업스테이지 AI로 보내는 데 동의합니다(성명·반/번호는 보내지 않고, 메모 속 학생 이름은 '학생'으로 바꿔 보냄)
+                </label>
+              </div>
+            </div>
+          </div>
           <div class="batch-actions">
             <button class="btn primary" type="button" id="batchGenerateBtn">일괄 생성</button>
+            <button class="btn blue" type="button" id="aiRefineBtn" disabled>AI로 다듬기</button>
             <button class="btn navy" type="button" id="batchExportEduBtn">결과 XLSX 저장</button>
             <button class="btn" type="button" id="batchSimilarityBtn">중복 검사</button>
             <button class="btn danger" type="button" id="batchClearBtn">비우기</button>
+            <span class="help-text" id="aiProgress" role="status" aria-live="polite"></span>
           </div>
           <div id="similarityReport" class="similarity-report" hidden></div>
           <div id="batchResults" class="saved-list" style="margin-top: 14px;">
@@ -1109,6 +1195,12 @@
     const batchCount = document.querySelector("#batchCount");
     const similarityReport = document.querySelector("#similarityReport");
     const batchUnitChoices = document.querySelector("#batchUnitChoices");
+    const aiRefineBtn = document.querySelector("#aiRefineBtn");
+    const aiProgress = document.querySelector("#aiProgress");
+    const aiStatusPill = document.querySelector("#aiStatusPill");
+    const classContextInput = document.querySelector("#classContext");
+    const aiAccessCodeInput = document.querySelector("#aiAccessCode");
+    const aiConsent = document.querySelector("#aiConsent");
     const cautionWords = ["믿음이 좋", "신앙이 깊", "경건", "은혜를 많이", "하나님을 사랑", "기도를 잘", "모범적인 신앙", "신앙심", "독실", "회심", "구원의 확신", "성령"];
     const defaultUnits = [...unitSelect.options].map((option) => option.value);
     const activityMap = {
@@ -1805,6 +1897,11 @@
     let loadedXlsxName = "";
     let batchGenerated = [];
     let batchLoadToken = 0;
+    const AI_ENDPOINT = "/api/refine";
+    const AI_CODE_SESSION_KEY = "christian-subject-setak-ai-code";
+    const AI_CONCURRENCY = 3;
+    let aiStatus = { enabled: false, requiresCode: false };
+    let aiRunning = false;
 
     function selectedValues(groupName) {
       return [...document.querySelectorAll(`[data-group="${groupName}"] input:checked`)].map((item) => item.value);
@@ -2450,9 +2547,12 @@
           originalRow: row,
           headers,
           student: [classNumber, cell("realName") || studentLabel].filter(Boolean).join(" "),
+          // 화면에만 쓰고 저장하거나 AI로 보내지 않는다(AI로 보낼 메모에서 이 이름을 지우는 데 쓴다).
+          realName: cell("realName"),
           // 저장한 메모에는 성명을 남기지 않는다.
           recordLabel: classNumber || studentLabel,
           gradeLevel: cell("gradeLevel").includes("고") ? "고등학교" : "중학교",
+          gradeLevelFromFile: Boolean(cell("gradeLevel")),
           gradeYear: gradeFromFile,
           gradeFromFile: Boolean(gradeFromFile),
           subjectName: cell("subject"),
@@ -2498,11 +2598,13 @@
                   <td class="nowrap">${escapeHtml(focusProfiles[item.focusType]?.label || "공통")}</td>
                   <td class="nowrap">${escapeHtml(intensityLabel(item.intensity))}</td>
                   <td class="unit-cell">${escapeHtml(item.unitName)}${item.unitFromFile ? '<div class="help-text">파일 단원</div>' : ""}</td>
-                  <td class="batch-result-text">${escapeHtml(item.text)}${lengthNoteHtml(item.text)}</td>
+                  <td class="batch-result-text">${escapeHtml(item.text)}${lengthNoteHtml(item.text)}${resultTagsHtml(item)}</td>
                   <td>
                     <span class="mini-actions">
                       <button class="mini" type="button" data-batch-copy="${index}">복사</button>
                       <button class="mini" type="button" data-batch-save="${index}">저장</button>
+                      ${item.evidence && aiStatus.enabled && !aiRunning ? `<button class="mini" type="button" data-batch-ai="${index}">${item.aiStatus === "done" ? "AI 다시" : "AI"}</button>` : ""}
+                      ${item.aiStatus === "done" ? `<button class="mini" type="button" data-batch-revert="${index}">되돌리기</button>` : ""}
                     </span>
                   </td>
                 </tr>
@@ -2511,6 +2613,18 @@
           </table>
         </div>
       `;
+    }
+
+    function resultTagsHtml(item) {
+      const tags = [];
+      if (!item.evidence) tags.push('<span class="tag warn">메모 없음 · 검토 필요</span>');
+      if (item.aiStatus === "pending") tags.push('<span class="tag">AI 다듬는 중…</span>');
+      if (item.aiStatus === "done") tags.push('<span class="tag ai">AI 다듬음 · 메모와 비교 확인</span>');
+      if (item.aiStatus === "error") tags.push(`<span class="tag warn">AI 실패: ${escapeHtml(item.aiError || "알 수 없는 오류")}</span>`);
+      const found = cautionWords.filter((word) => item.text.includes(word));
+      if (found.length) tags.push(`<span class="tag warn">주의 표현: ${escapeHtml(found.join(", "))}</span>`);
+      const memo = item.aiStatus === "done" ? `<div class="memo-ref">메모: ${escapeHtml(item.evidence)}</div>` : "";
+      return (tags.length ? `<div>${tags.join("")}</div>` : "") + memo;
     }
 
     function lengthNoteHtml(text) {
@@ -2571,6 +2685,8 @@
         isBatch: true,
         studentIndex: index,
         focusType,
+        // '자동 분배'로 순서대로 붙인 유형은 관찰 근거가 아니므로 AI에는 보내지 않는다.
+        focusAssigned: Boolean(row.focusType) || options.focusMode !== "auto",
         intensity,
         toneMode: row.toneMode || options.toneMode,
         diversityMode: options.diversityMode,
@@ -2585,6 +2701,10 @@
     }
 
     function generateBatch() {
+      if (aiRunning) {
+        showToast("AI 다듬기가 끝난 뒤 다시 생성해 주세요");
+        return;
+      }
       const text = batchPaste.value.trim() || loadedBatchText.trim();
       const rows = rowsToBatch(text);
       const options = getBatchOptions();
@@ -2594,11 +2714,16 @@
       }
       batchGenerated = rows.map((row, index) => {
         const diversified = diversifyRow(row, index, options);
+        const text = makeSentence(diversified);
         return {
           ...diversified,
-          text: makeSentence(diversified)
+          text,
+          ruleText: text,
+          aiStatus: "",
+          aiError: ""
         };
       });
+      aiProgress.textContent = "";
       const report = analyzeSimilarity(batchGenerated);
       renderSimilarityReport(report, false);
       renderBatchResults();
@@ -3186,8 +3311,172 @@
       batchGenerated = [];
       similarityReport.hidden = true;
       similarityReport.innerHTML = "";
+      aiProgress.textContent = "";
       renderBatchResults();
     }
+
+    function setAiUnavailable(reason) {
+      aiStatus = { enabled: false, requiresCode: false };
+      aiStatusPill.textContent = "사용 불가";
+      aiStatusPill.className = "pill";
+      const note = document.querySelector("#aiUnavailableText");
+      note.textContent = reason;
+      note.hidden = false;
+      document.querySelector("#aiFields").hidden = true;
+      updateAiButton();
+    }
+
+    async function checkAiAvailability() {
+      if (!/^https?:$/.test(location.protocol)) {
+        setAiUnavailable("파일을 직접 열었을 때는 AI로 다듬기를 쓸 수 없습니다. 웹사이트 주소로 접속해 주세요.");
+        return;
+      }
+      try {
+        const response = await fetch(AI_ENDPOINT, { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok || !data.enabled) {
+          setAiUnavailable("서버에 업스테이지 API 키가 아직 설정되지 않았습니다.");
+          return;
+        }
+        aiStatus = { enabled: true, requiresCode: Boolean(data.requiresCode) };
+      } catch (error) {
+        setAiUnavailable("AI 서버에 연결할 수 없습니다.");
+        return;
+      }
+      aiStatusPill.textContent = "사용 가능";
+      aiStatusPill.className = "pill good";
+      document.querySelector("#aiUnavailableText").hidden = true;
+      document.querySelector("#aiFields").hidden = false;
+      document.querySelector("#aiCodeField").hidden = !aiStatus.requiresCode;
+      try {
+        aiAccessCodeInput.value = sessionStorage.getItem(AI_CODE_SESSION_KEY) || "";
+      } catch (error) {
+        aiAccessCodeInput.value = "";
+      }
+      updateAiButton();
+      renderBatchResults();
+    }
+
+    function updateAiButton() {
+      aiRefineBtn.disabled = !aiStatus.enabled || aiRunning;
+    }
+
+    // 성명·반/번호·원본 행은 보내지 않는다. 메모 안에 학생 이름이 있으면 '학생'으로 바꾼다.
+    function aiPayload(item) {
+      const name = item.realName || "";
+      const memo = name.length >= 2 ? item.evidence.split(name).join("학생") : item.evidence;
+      return {
+        accessCode: aiAccessCodeInput.value.trim(),
+        gradeLevel: item.gradeLevelFromFile ? item.gradeLevel : "",
+        gradeYear: normalizeGradeYear(item.gradeYear),
+        unitName: item.unitName,
+        classContext: classContextInput.value.trim(),
+        focusType: item.focusAssigned ? item.focusType : "",
+        intensity: item.intensity,
+        toneMode: item.toneMode,
+        lengthTarget: item.lengthTarget,
+        memo
+      };
+    }
+
+    async function requestRefinement(item) {
+      const response = await fetch(AI_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(aiPayload(item))
+      });
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (error) {
+        data = {};
+      }
+      if (!response.ok || !data.text) {
+        const failure = new Error(data.error || `서버 오류(${response.status})`);
+        failure.status = response.status;
+        throw failure;
+      }
+      return data.text;
+    }
+
+    // 메모가 있는 학생만 AI로 다듬는다. 실패한 학생은 원래 문장을 그대로 둔다.
+    async function refineWithAi(indices) {
+      if (aiRunning) return;
+      if (!aiStatus.enabled) {
+        showToast("지금은 AI로 다듬기를 쓸 수 없습니다");
+        return;
+      }
+      if (!aiConsent.checked) {
+        showToast("AI로 보내기 전에 전송 동의에 체크해 주세요");
+        aiConsent.focus();
+        return;
+      }
+      if (aiStatus.requiresCode && !aiAccessCodeInput.value.trim()) {
+        showToast("접속 코드를 입력해 주세요");
+        aiAccessCodeInput.focus();
+        return;
+      }
+      if (!batchGenerated.length) generateBatch();
+      const items = (indices || batchGenerated.map((_, index) => index))
+        .map((index) => batchGenerated[index])
+        .filter((item) => item && item.evidence);
+      if (!items.length) {
+        showToast("관찰 메모가 있는 학생이 없습니다. 메모가 있어야 AI로 다듬을 수 있습니다");
+        return;
+      }
+      try {
+        sessionStorage.setItem(AI_CODE_SESSION_KEY, aiAccessCodeInput.value.trim());
+      } catch (error) {
+        // 코드를 기억하지 못해도 이번 요청에는 지장이 없다.
+      }
+      items.forEach((item) => {
+        item.aiStatus = "pending";
+        item.aiError = "";
+      });
+      aiRunning = true;
+      updateAiButton();
+      renderBatchResults();
+      const queue = [...items];
+      let finished = 0;
+      let failed = 0;
+      let rejected = false;
+      const worker = async () => {
+        while (queue.length && !rejected) {
+          const item = queue.shift();
+          try {
+            item.text = await requestRefinement(item);
+            item.aiStatus = "done";
+          } catch (error) {
+            item.aiStatus = "error";
+            item.aiError = error.message;
+            failed += 1;
+            if (error.status === 401) rejected = true;
+          }
+          finished += 1;
+          aiProgress.textContent = `AI 다듬는 중 ${finished}/${items.length}`;
+          renderBatchResults();
+        }
+      };
+      await Promise.all(Array.from({ length: AI_CONCURRENCY }, worker));
+      items.forEach((item) => {
+        if (item.aiStatus === "pending") item.aiStatus = "";
+      });
+      aiRunning = false;
+      updateAiButton();
+      renderBatchResults();
+      renderSimilarityReport(analyzeSimilarity(batchGenerated), false);
+      const succeeded = finished - failed;
+      aiProgress.textContent = `AI 다듬기 ${succeeded}명 완료${failed ? ` · ${failed}명 실패` : ""}`;
+      if (rejected) {
+        showToast("접속 코드가 맞지 않아 멈췄습니다");
+      } else if (failed) {
+        showToast(`${succeeded}명을 다듬었고 ${failed}명은 실패했습니다. 실패한 학생은 원래 문장 그대로입니다`);
+      } else {
+        showToast(`${succeeded}명을 AI로 다듬었습니다. 메모와 비교해 확인해 주세요`);
+      }
+    }
+
+    aiRefineBtn.addEventListener("click", () => refineWithAi());
 
     document.querySelector("#batchClearBtn").addEventListener("click", () => {
       clearBatchWork();
@@ -3214,6 +3503,16 @@
       if (saveIndex !== undefined) {
         savedToast(saveBatchItems([batchGenerated[Number(saveIndex)]]));
       }
+      const revertIndex = event.target.dataset.batchRevert;
+      if (revertIndex !== undefined) {
+        const item = batchGenerated[Number(revertIndex)];
+        item.text = item.ruleText;
+        item.aiStatus = "";
+        renderBatchResults();
+        showToast("원래 문장으로 되돌렸습니다");
+      }
+      const aiIndex = event.target.dataset.batchAi;
+      if (aiIndex !== undefined) refineWithAi([Number(aiIndex)]);
     });
 
     document.querySelector("#exportBtn").addEventListener("click", () => {
@@ -3243,6 +3542,14 @@
       }
       clearBatchWork();
       resetSingleForm();
+      classContextInput.value = "";
+      aiConsent.checked = false;
+      aiAccessCodeInput.value = "";
+      try {
+        sessionStorage.removeItem(AI_CODE_SESSION_KEY);
+      } catch (error) {
+        // 세션 저장소를 못 쓰면 지울 것도 없다.
+      }
       renderRecords();
       showToast("이 PC에 남은 학생 기록을 지웠습니다");
     });
@@ -3285,6 +3592,7 @@
     renderBatchResults();
     renderRecords();
     inspectText("");
+    checkAiAvailability();
   </script>
 </body>
 </html>
