@@ -8,8 +8,8 @@
 //   ACCESS_CODE              (선택) 서버 키를 쓸 때 이 코드를 입력한 사람만 호출할 수 있다
 //   UPSTAGE_MODEL            (선택) 기본값 solar-pro4
 //   UPSTAGE_REASONING_EFFORT (선택) 기본값 none. 추론을 켜면 답 없이 추론만 하다 끝날 수 있다
-//   OPENAI_MODEL             (선택) 개인 GPT 키로 쓸 모델. 기본값 gpt-6-sol
-//   ANTHROPIC_MODEL          (선택) 개인 Claude 키로 쓸 모델. 기본값 claude-opus-5
+//   OPENAI_MODEL             (선택) 개인 GPT 키로 쓸 모델. 기본값 gpt-6-luna
+//   ANTHROPIC_MODEL          (선택) 개인 Claude 키로 쓸 모델. 기본값 claude-sonnet-5
 const crypto = require("node:crypto");
 const Anthropic = require("@anthropic-ai/sdk");
 const OpenAI = require("openai");
@@ -17,8 +17,8 @@ const OpenAI = require("openai");
 const UPSTAGE_URL = "https://api.upstage.ai/v1/chat/completions";
 const MODELS = {
   upstage: process.env.UPSTAGE_MODEL || "solar-pro4",
-  openai: process.env.OPENAI_MODEL || "gpt-6-sol",
-  anthropic: process.env.ANTHROPIC_MODEL || "claude-opus-5"
+  openai: process.env.OPENAI_MODEL || "gpt-6-luna",
+  anthropic: process.env.ANTHROPIC_MODEL || "claude-sonnet-5"
 };
 const UPSTAGE_REASONING_EFFORT = process.env.UPSTAGE_REASONING_EFFORT || "none";
 // 서버 기능으로 '거절 시 다른 모델로 다시 시도'를 지원하는 Claude 모델

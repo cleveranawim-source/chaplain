@@ -49,9 +49,9 @@
 AI를 쓰는 방법은 두 가지입니다.
 
 - **학교(서버) 키:** 관리자가 Vercel에 `UPSTAGE_API_KEY`를 등록해 두면, 선생님들은 접속 코드만 입력해서 씁니다. 사용료는 그 키의 계정에서 나갑니다.
-- **개인 키:** 각자 발급한 **GPT(OpenAI, `sk-`로 시작)** 또는 **Claude(Anthropic, `sk-ant-`로 시작)** 키를 입력하면 그 키로 호출합니다. 업스테이지 키는 개인 키로 쓸 수 없습니다. 키 앞부분으로 회사를 자동으로 가리고, 기본 모델은 GPT 키가 `gpt-6-sol`, Claude 키가 `claude-opus-5`입니다. 접속 코드가 필요 없고 사용료도 각자의 계정에서 나갑니다. 서버 키가 없어도 개인 키만으로 쓸 수 있습니다.
+- **개인 키:** 각자 발급한 **GPT(OpenAI, `sk-`로 시작)** 또는 **Claude(Anthropic, `sk-ant-`로 시작)** 키를 입력하면 그 키로 호출합니다. 업스테이지 키는 개인 키로 쓸 수 없습니다. 키 앞부분으로 회사를 자동으로 가리고, 기본 모델은 GPT 키가 `gpt-6-luna`, Claude 키가 `claude-sonnet-5`입니다. 접속 코드가 필요 없고 사용료도 각자의 계정에서 나갑니다. 서버 키가 없어도 개인 키만으로 쓸 수 있습니다.
   - 키는 이 웹앱의 서버 함수(`api/refine.js`)를 거쳐 해당 AI 회사로만 전달되고, 서버에 저장하거나 기록하지 않습니다.
-  - GPT와 Claude는 각 회사의 공식 SDK(`openai`, `@anthropic-ai/sdk`, `package.json`에 명시)로 호출합니다. Claude는 안전 정책으로 거절될 때 서버가 알맞은 다른 Claude 모델로 한 번 더 시도하도록(`fallbacks: "default"`) 설정되어 있습니다.
+  - GPT와 Claude는 각 회사의 공식 SDK(`openai`, `@anthropic-ai/sdk`, `package.json`에 명시)로 호출합니다. `ANTHROPIC_MODEL`을 `claude-opus-5`처럼 거절 시 재시도를 지원하는 모델로 바꾸면, 안전 정책으로 거절될 때 서버가 알맞은 다른 Claude 모델로 한 번 더 시도합니다(`fallbacks: "default"`).
   - 브라우저에는 기본적으로 탭을 닫을 때까지만 남습니다. '이 PC에 키 기억'을 켜면 이 브라우저에 계속 남으니 공용 PC에서는 켜지 마세요. '이 PC에서 모두 지우기'로 지울 수 있습니다.
 
 Vercel 프로젝트의 Settings → Environment Variables에 넣는 값(넣은 뒤 다시 배포해야 적용):
@@ -62,8 +62,8 @@ Vercel 프로젝트의 Settings → Environment Variables에 넣는 값(넣은 �
 | `ACCESS_CODE` | 권장 | 서버 키를 쓸 때 이 코드를 입력한 사람만 쓸 수 있음(주소를 아는 누구나 호출하는 것을 막음) |
 | `UPSTAGE_MODEL` | 선택 | 기본값 `solar-pro4` |
 | `UPSTAGE_REASONING_EFFORT` | 선택 | 기본값 `none`. 추론을 켜면 답을 내기 전에 토큰을 다 써서 빈 응답이 올 수 있음 |
-| `OPENAI_MODEL` | 선택 | 개인 GPT 키로 쓸 모델. 기본값 `gpt-6-sol` |
-| `ANTHROPIC_MODEL` | 선택 | 개인 Claude 키로 쓸 모델. 기본값 `claude-opus-5` |
+| `OPENAI_MODEL` | 선택 | 개인 GPT 키로 쓸 모델. 기본값 `gpt-6-luna` |
+| `ANTHROPIC_MODEL` | 선택 | 개인 Claude 키로 쓸 모델. 기본값 `claude-sonnet-5` |
 
 설정이 적용됐는지는 `/api/refine` 주소를 열어 확인합니다. `enabled`는 서버 키, `requiresCode`는 접속 코드 적용 여부이고, 어느 배포인지 알 수 있게 환경·브랜치·커밋도 함께 보여 줍니다(비밀 값은 나오지 않음).
 
