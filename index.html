@@ -85,6 +85,71 @@
       font-size: 0.92rem;
     }
 
+    .privacy-note .privacy-clear {
+      display: block;
+      margin-top: 10px;
+      background: #ffffff;
+      color: #24406f;
+      border: 1px solid rgba(49, 85, 166, 0.3);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+      overflow-x: auto;
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+      margin-bottom: -1px;
+      padding: 10px 16px;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 1rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      color: var(--ink);
+    }
+
+    .tab[aria-selected="true"] {
+      color: var(--green);
+      border-bottom-color: var(--green);
+    }
+
+    .tab:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: -2px;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .tab-count {
+      min-width: 24px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #eef1f5;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    .tab[aria-selected="true"] .tab-count {
+      background: var(--green-soft);
+      color: #24406f;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: minmax(320px, 430px) minmax(0, 1fr);
@@ -101,6 +166,7 @@
 
     .panel-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
@@ -365,7 +431,7 @@
 
     .option-strip {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px;
       margin: 14px 0 10px;
       padding: 12px;
@@ -520,6 +586,24 @@
       color: #5d6673;
     }
 
+    .nowrap,
+    .mini {
+      white-space: nowrap;
+    }
+
+    .unit-cell {
+      min-width: 130px;
+    }
+
+    td .mini-actions {
+      flex-wrap: nowrap;
+    }
+
+    .help-text.over-limit {
+      color: #8a3030;
+      font-weight: 700;
+    }
+
     .saved-item {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -631,6 +715,12 @@
         padding-right: 14px;
       }
 
+      .tab {
+        padding-left: 11px;
+        padding-right: 11px;
+        font-size: 0.94rem;
+      }
+
       .btn {
         flex: 1 1 calc(50% - 9px);
         padding-left: 10px;
@@ -650,6 +740,7 @@
       }
 
       .topbar,
+      .tabs,
       .input-panel,
       .toolbar,
       .saved-panel,
@@ -681,17 +772,144 @@
   <main class="app-shell">
     <header class="topbar">
       <div class="title-block">
-        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v8 · 2026-07-21</span></h1>
+        <h1>✝️ 기독교 학교 종교과목 세특 도우미 <span class="pill" style="vertical-align: middle; font-size: 0.85rem;">v9 · 2026-09-25</span></h1>
         <p>중학교와 고등학교 종교 수업의 관찰 근거를 바탕으로 생활기록부 교과세부특기사항 초안을 만듭니다. 신앙의 깊이를 평가하지 않고, 수업에서 드러난 이해, 해석, 성찰, 표현, 공동체 태도를 중심으로 정리합니다.</p>
       </div>
-      <aside class="privacy-note">입력 내용은 이 브라우저 안에만 저장됩니다. 학생 실명 대신 번호나 이니셜을 사용하면 더 안전합니다.</aside>
+      <aside class="privacy-note">
+        입력한 내용은 외부로 전송되지 않고 이 브라우저 안에서만 처리됩니다. 저장한 메모에는 학생 이름을 남기지 않으며, 30일이 지나면 자동으로 지워집니다. 공용 PC라면 작업을 마친 뒤 아래 버튼을 눌러 주세요.
+        <button class="mini privacy-clear" type="button" id="wipeAllBtn">이 PC에서 모두 지우기</button>
+      </aside>
     </header>
 
-    <section class="layout">
+    <nav class="tabs" role="tablist" aria-label="작업 선택">
+      <button class="tab" type="button" role="tab" id="tab-batch" data-tab="batch" aria-controls="panel-batch" aria-selected="true">반 전체 생성</button>
+      <button class="tab" type="button" role="tab" id="tab-single" data-tab="single" aria-controls="panel-single" aria-selected="false" tabindex="-1">개별 학생</button>
+      <button class="tab" type="button" role="tab" id="tab-saved" data-tab="saved" aria-controls="panel-saved" aria-selected="false" tabindex="-1">저장한 메모 <span class="tab-count" id="savedCount">0</span></button>
+    </nav>
+
+    <section class="tab-panel" id="panel-batch" role="tabpanel" aria-labelledby="tab-batch">
+      <section class="panel">
+        <div class="panel-header">
+          <h2 class="major-title">반 전체 생성</h2>
+          <span class="pill" id="batchCount">0명</span>
+        </div>
+        <div class="panel-body">
+          <div class="two-col">
+            <div>
+              <label for="batchFile">엑셀/CSV 파일 업로드</label>
+              <input class="file-input" id="batchFile" type="file" accept=".xlsx,.csv,.txt" />
+              <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). 파일의 학년 열(1학년, 3-5, 2학년 5반 등)을 읽어 학년별로 다른 서술을 만듭니다. 학년 열이 없으면 아래 학년 선택에서 직접 지정하세요. CSV(UTF-8, 엑셀 기본 저장 형식 모두)나 붙여넣기도 지원합니다.</p>
+            </div>
+            <div>
+              <label for="batchPaste">엑셀 표 붙여넣기</label>
+              <textarea class="batch-area" id="batchPaste" placeholder="학생,학년,학교급,과목명,단원,활동,강점,관찰메모&#10;A학생,1,중학교,종교,공동체 이웃 사랑,토론;글쓰기,경청;성찰,본문을 학교생활과 연결해 발표함"></textarea>
+            </div>
+          </div>
+          <div class="option-strip">
+            <div>
+              <label for="batchGradeMode">학년</label>
+              <select id="batchGradeMode">
+                <option value="auto">파일에서 자동 인식</option>
+                <option value="1">모두 1학년</option>
+                <option value="2">모두 2학년</option>
+                <option value="3">모두 3학년</option>
+              </select>
+            </div>
+            <div>
+              <label for="diversityMode">겹침 방지</label>
+              <select id="diversityMode">
+                <option value="medium">보통</option>
+                <option value="low">낮음</option>
+                <option value="high">높음</option>
+              </select>
+            </div>
+            <div>
+              <label for="batchFocusMode">학생 유형</label>
+              <select id="batchFocusMode">
+                <option value="auto">자동 분배</option>
+                <option value="understanding">이해형</option>
+                <option value="question">질문형</option>
+                <option value="reflection">성찰형</option>
+                <option value="discussion">토론형</option>
+                <option value="presentation">발표형</option>
+                <option value="practice">실천형</option>
+              </select>
+            </div>
+            <div>
+              <label for="batchIntensityMode">수행 강도</label>
+              <select id="batchIntensityMode">
+                <option value="stable">안정적 수행</option>
+                <option value="basic">기본 참여</option>
+                <option value="growth">성장 관찰</option>
+                <option value="strong">뚜렷한 강점</option>
+                <option value="support">보완 필요</option>
+              </select>
+            </div>
+            <div>
+              <label for="batchToneMode">문체</label>
+              <select id="batchToneMode">
+                <option value="balanced">균형 있게</option>
+                <option value="growth">성장 중심</option>
+                <option value="academic">학업 역량 중심</option>
+                <option value="community">공동체 태도 중심</option>
+              </select>
+            </div>
+            <div>
+              <label for="batchLengthTarget">목표 글자수</label>
+              <select id="batchLengthTarget">
+                <option value="250">250자 내외</option>
+                <option value="300">300자 내외</option>
+                <option value="350">350자 내외</option>
+                <option value="400" selected>400자 내외</option>
+                <option value="450">450자 내외</option>
+                <option value="500">500자 내외</option>
+              </select>
+            </div>
+            <label class="check-line" for="autoRotateOptions">
+              <input id="autoRotateOptions" type="checkbox" checked />
+              학생별로 활동/강점 섞기
+            </label>
+          </div>
+          <p class="help-text">수행 강도는 선택한 값이 반 전체에 똑같이 적용됩니다. 학생마다 다르게 하려면 파일에 '강도' 열(기본·안정·성장·강점·보완)을 넣으세요. 분량은 나이스와 같은 방식으로 바이트도 함께 셉니다(한글 3, 영문·숫자·공백 1, 줄바꿈 2 · 최대 1,500바이트).</p>
+          <div class="batch-unit-box">
+            <div class="batch-unit-head">
+              <div>
+                <div class="label">반 전체 주제 섞기</div>
+                <p class="help-text" style="margin-top: 3px;">파일에 단원 열이 있으면 그 값을 먼저 씁니다. 단원 열이 비어 있는 학생에게는 여기서 체크한 주제를 학생별로 다르게 배정합니다. 직접 추가한 주제도 자동으로 포함됩니다.</p>
+              </div>
+              <div class="batch-unit-tools">
+                <button class="mini" type="button" id="selectAllBatchUnits">전체 선택</button>
+                <button class="mini" type="button" id="clearBatchUnits">선택 해제</button>
+              </div>
+            </div>
+            <div class="visible-check-grid" id="batchUnitChoices"></div>
+            <div style="margin-top: 10px;">
+              <label for="batchUnitMode">주제 배정 방식</label>
+              <select id="batchUnitMode">
+                <option value="cycle">고르게 순환</option>
+                <option value="random">랜덤 섞기</option>
+              </select>
+            </div>
+          </div>
+          <div class="batch-actions">
+            <button class="btn primary" type="button" id="batchGenerateBtn">일괄 생성</button>
+            <button class="btn navy" type="button" id="batchExportEduBtn">결과 XLSX 저장</button>
+            <button class="btn" type="button" id="batchSimilarityBtn">중복 검사</button>
+            <button class="btn danger" type="button" id="batchClearBtn">비우기</button>
+          </div>
+          <div id="similarityReport" class="similarity-report" hidden></div>
+          <div id="batchResults" class="saved-list" style="margin-top: 14px;">
+            <div class="empty">CSV 파일을 올리거나 엑셀 표를 붙여넣으면 학생별 세특 초안이 한 번에 생성됩니다.</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="tab-panel layout" id="panel-single" role="tabpanel" aria-labelledby="tab-single" hidden>
       <form class="panel input-panel" id="setakForm">
         <div class="panel-header">
           <h2>관찰 근거 입력</h2>
-          <span class="pill">로컬 저장</span>
+          <span class="pill">외부 전송 없음</span>
         </div>
         <div class="panel-body form-grid">
           <div class="two-col">
@@ -845,139 +1063,43 @@
             신앙 고백은 평가 대상이 아니라 학습 자료입니다. 표현은 사고, 태도, 탐구, 공동체 역량으로 바꿉니다.
           </div>
         </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <h2 class="major-title">반 전체 생성</h2>
-            <span class="pill" id="batchCount">0명</span>
-          </div>
-          <div class="panel-body">
-            <div class="two-col">
-              <div>
-                <label for="batchFile">엑셀/CSV 파일 업로드</label>
-                <input class="file-input" id="batchFile" type="file" accept=".xlsx,.csv,.txt" />
-                <p class="help-text">나이스에서 받은 과목세특 엑셀(.xlsx)을 올리면, 결과 저장 시 원본 양식을 그대로 유지한 채 세특 열만 채워집니다(나이스 재업로드 호환). 파일의 학년 열(1학년, 3-5, 2학년 5반 등)을 읽어 학년별로 다른 서술을 만듭니다. 학년 열이 없으면 아래 학년 선택에서 직접 지정하세요. CSV나 붙여넣기도 지원합니다.</p>
-              </div>
-              <div>
-                <label for="batchPaste">엑셀 표 붙여넣기</label>
-                <textarea class="batch-area" id="batchPaste" placeholder="학생,학년,학교급,과목명,단원,활동,강점,관찰메모&#10;A학생,1,중학교,종교,공동체 이웃 사랑,토론;글쓰기,경청;성찰,본문을 학교생활과 연결해 발표함"></textarea>
-              </div>
-            </div>
-            <div class="option-strip">
-              <div>
-                <label for="batchGradeMode">학년</label>
-                <select id="batchGradeMode">
-                  <option value="auto">파일에서 자동 인식</option>
-                  <option value="1">모두 1학년</option>
-                  <option value="2">모두 2학년</option>
-                  <option value="3">모두 3학년</option>
-                </select>
-              </div>
-              <div>
-                <label for="diversityMode">겹침 방지</label>
-                <select id="diversityMode">
-                  <option value="medium">보통</option>
-                  <option value="low">낮음</option>
-                  <option value="high">높음</option>
-                </select>
-              </div>
-              <div>
-                <label for="batchFocusMode">학생 유형</label>
-                <select id="batchFocusMode">
-                  <option value="auto">자동 분배</option>
-                  <option value="understanding">이해형</option>
-                  <option value="question">질문형</option>
-                  <option value="reflection">성찰형</option>
-                  <option value="discussion">토론형</option>
-                  <option value="presentation">발표형</option>
-                  <option value="practice">실천형</option>
-                </select>
-              </div>
-              <div>
-                <label for="batchIntensityMode">수행 강도</label>
-                <select id="batchIntensityMode">
-                  <option value="stable">안정적 수행</option>
-                  <option value="basic">기본 참여</option>
-                  <option value="growth">성장 관찰</option>
-                  <option value="strong">뚜렷한 강점</option>
-                  <option value="support">보완 필요 포함</option>
-                </select>
-              </div>
-              <div>
-                <label for="batchLengthTarget">목표 글자수</label>
-                <select id="batchLengthTarget">
-                  <option value="250">250자 내외</option>
-                  <option value="300">300자 내외</option>
-                  <option value="350">350자 내외</option>
-                  <option value="400" selected>400자 내외</option>
-                  <option value="450">450자 내외</option>
-                  <option value="500">500자 내외</option>
-                </select>
-              </div>
-              <label class="check-line" for="autoRotateOptions">
-                <input id="autoRotateOptions" type="checkbox" checked />
-                학생별로 활동/강점 섞기
-              </label>
-            </div>
-            <div class="batch-unit-box">
-              <div class="batch-unit-head">
-                <div>
-                  <div class="label">반 전체 주제 섞기</div>
-                  <p class="help-text" style="margin-top: 3px;">체크한 단원/수업주제 안에서 학생별로 다르게 배정합니다. 직접 추가한 주제도 자동으로 포함됩니다.</p>
-                </div>
-                <div class="batch-unit-tools">
-                  <button class="mini" type="button" id="selectAllBatchUnits">전체 선택</button>
-                  <button class="mini" type="button" id="clearBatchUnits">선택 해제</button>
-                </div>
-              </div>
-              <div class="visible-check-grid" id="batchUnitChoices"></div>
-              <div style="margin-top: 10px;">
-                <label for="batchUnitMode">주제 배정 방식</label>
-                <select id="batchUnitMode">
-                  <option value="cycle">고르게 순환</option>
-                  <option value="random">랜덤 섞기</option>
-                </select>
-              </div>
-            </div>
-            <div class="batch-actions">
-              <button class="btn primary" type="button" id="batchGenerateBtn">일괄 생성</button>
-              <button class="btn navy" type="button" id="batchExportEduBtn">결과 XLSX 저장</button>
-              <button class="btn" type="button" id="batchSimilarityBtn">중복 검사</button>
-              <button class="btn danger" type="button" id="batchClearBtn">비우기</button>
-            </div>
-            <div id="similarityReport" class="similarity-report" hidden></div>
-            <div id="batchResults" class="saved-list" style="margin-top: 14px;">
-              <div class="empty">CSV 파일을 올리거나 엑셀 표를 붙여넣으면 학생별 세특 초안이 한 번에 생성됩니다.</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel saved-panel">
-          <div class="panel-header">
-            <h2>저장한 학생 메모</h2>
-            <span class="mini-actions">
-              <button class="mini" type="button" id="exportBtn">CSV 내보내기</button>
-              <button class="mini" type="button" id="clearRecordsBtn">전체 삭제</button>
-            </span>
-          </div>
-          <div class="panel-body">
-            <div id="savedList" class="saved-list"></div>
-          </div>
-        </section>
       </div>
+    </section>
+
+    <section class="tab-panel" id="panel-saved" role="tabpanel" aria-labelledby="tab-saved" hidden>
+      <section class="panel saved-panel">
+        <div class="panel-header">
+          <h2 class="major-title">저장한 학생 메모</h2>
+          <span class="mini-actions">
+            <button class="mini" type="button" id="exportBtn">CSV 내보내기</button>
+            <button class="mini" type="button" id="clearRecordsBtn">전체 삭제</button>
+          </span>
+        </div>
+        <div class="panel-body">
+          <p class="help-text" style="margin-top: 0;">반/번호(또는 '학생' 열 값)만 함께 저장하고 성명은 저장하지 않습니다. 저장한 지 30일이 지난 메모는 자동으로 지워집니다.</p>
+          <div id="savedList" class="saved-list"></div>
+        </div>
+      </section>
     </section>
   </main>
 
-  <div class="toast" id="toast">완료</div>
+  <div class="toast" id="toast" role="status" aria-live="polite">완료</div>
 
   <script>
     const STORAGE_KEY = "christian-subject-setak-records-v1";
     const UNIT_STORAGE_KEY = "christian-subject-setak-units-v1";
+    const TAB_STORAGE_KEY = "christian-subject-setak-tab-v1";
+    const MAX_RECORDS = 200;
+    // 화면 안내 문구(개인정보 안내, 저장한 메모)에도 같은 값이 적혀 있다.
+    const RECORD_TTL_DAYS = 30;
+    const NEIS_BYTE_LIMIT = 1500;
+    const utf8Encoder = new TextEncoder();
     const form = document.querySelector("#setakForm");
     const resultText = document.querySelector("#resultText");
     const charCount = document.querySelector("#charCount");
     const safetyState = document.querySelector("#safetyState");
     const savedList = document.querySelector("#savedList");
+    const savedCount = document.querySelector("#savedCount");
     const toast = document.querySelector("#toast");
     const unitSelect = document.querySelector("#unitName");
     const customUnitInput = document.querySelector("#customUnit");
@@ -1267,7 +1389,7 @@
       "학습 활동에 적극적으로 참여하며 생각의 폭을 넓힘.",
       "주어진 활동에 진지하게 임하며 배움을 이어 감."
     ];
-    const batchMemoFallbacks = [
+    const memoFallbacks = [
       "수업 중 나눈 이야기와 배운 내용을 자신의 경험과 연결 지어 이해함.",
       "배운 내용에 대한 자신의 생각을 글과 말로 정리하는 모습이 나타남.",
       "수업에서 다룬 내용을 일상의 경험에 비추어 보며 의미를 찾음.",
@@ -1583,22 +1705,49 @@
       "자신과 공동체를 함께 살피는 성숙한 시야가 자랄 것으로 기대됨.",
       "학습에 대한 주도성과 성찰의 힘이 더욱 단단해질 것으로 기대됨."
     ];
-    const memoFallbacks = [
-      (activityText) => `${activityText}에 꾸준히 참여하며 학습 내용을 수업 맥락에 맞게 정리함.`,
-      (activityText) => `${activityText}에 성실히 참여하며 배운 내용을 자신의 경험과 연결 지어 이해함.`,
-      (activityText) => `${activityText}의 과정마다 자신의 생각을 기록하며 배움의 흔적을 남김.`,
-      (activityText) => `${activityText}에 참여하는 동안 주제에 대한 관심을 꾸준히 이어 감.`
-    ];
+    // 나이스는 글자가 아니라 UTF-8 바이트로 센다: 한글 3, 영문·숫자·공백 1, 줄바꿈 2(CRLF).
+    function neisBytes(text) {
+      return utf8Encoder.encode(String(text || "").replace(/\r\n|\r|\n/g, "\r\n")).length;
+    }
+
+    function lengthSummary(text) {
+      const bytes = neisBytes(text);
+      const overLimit = bytes > NEIS_BYTE_LIMIT;
+      const label = `${String(text || "").length}자 · ${bytes.toLocaleString("ko-KR")}바이트${overLimit ? " · 나이스 한도 초과" : ""}`;
+      return { label, overLimit };
+    }
+
+    function memoSentence(evidence) {
+      return String(evidence || "")
+        .split(/[\r\n]+/)
+        .map((line) => line.replace(/\s+/g, " ").trim())
+        .filter(Boolean)
+        .map((line) => (/[.!?。]$/.test(line) ? line : `${line}.`))
+        .join(" ");
+    }
+
     function josa(text, withFinal, withoutFinal) {
       const source = String(text || "").trim();
       const code = source.charCodeAt(source.length - 1);
       if (code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 > 0) return withFinal;
       return withoutFinal;
     }
-    function composeCloser(seed) {
-      const total = closerHeads.length * closerTails.length;
-      const index = Math.abs(seed) % total;
-      return `${closerHeads[Math.floor(index / closerTails.length)]} ${closerTails[index % closerTails.length]}`;
+    // avoidSeed를 주면 그 문장과 앞부분·뒷부분이 모두 다른 조합을 고른다(한 글 안의 반복 방지).
+    function composeCloser(seed, avoidSeed) {
+      const tails = closerTails.length;
+      const total = closerHeads.length * tails;
+      let index = Math.abs(seed) % total;
+      if (avoidSeed !== undefined) {
+        const avoid = Math.abs(avoidSeed) % total;
+        for (let step = 0; step < total; step += 1) {
+          const candidate = (index + step) % total;
+          if (Math.floor(candidate / tails) !== Math.floor(avoid / tails) && candidate % tails !== avoid % tails) {
+            index = candidate;
+            break;
+          }
+        }
+      }
+      return `${closerHeads[Math.floor(index / tails)]} ${closerTails[index % tails]}`;
     }
     function composeExpectation(seed) {
       const total = expectationHeads.length * expectationTails.length;
@@ -1706,23 +1855,62 @@
       return Math.abs(hash) % length;
     }
 
-    function getRecords() {
+    function writeRecords(records) {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
       } catch (error) {
-        return [];
+        showToast("브라우저 저장소에 쓸 수 없습니다");
       }
     }
 
+    // 기한이 지난 메모는 버리고, 이전 버전이 name에 남긴 성명은 불러올 때 지운다.
+    function getRecords() {
+      let stored = [];
+      try {
+        stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      } catch (error) {
+        stored = [];
+      }
+      if (!Array.isArray(stored)) stored = [];
+      const cutoff = Date.now() - RECORD_TTL_DAYS * 24 * 60 * 60 * 1000;
+      const records = stored
+        .filter((record) => record && typeof record.text === "string")
+        .filter((record) => {
+          const savedTime = Date.parse(record.savedAt);
+          return Number.isNaN(savedTime) || savedTime >= cutoff;
+        })
+        .map((record) => ({
+          label: record.label || "",
+          subject: record.subject || "",
+          text: record.text,
+          savedAt: record.savedAt || ""
+        }));
+      if (JSON.stringify(records) !== JSON.stringify(stored)) writeRecords(records);
+      return records;
+    }
+
     function setRecords(records) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      writeRecords(records);
       renderRecords();
     }
 
+    // 새 메모를 앞에 붙이고 MAX_RECORDS를 넘는 오래된 메모 수를 돌려준다.
+    function addRecords(newRecords) {
+      const merged = [...newRecords, ...getRecords()];
+      setRecords(merged.slice(0, MAX_RECORDS));
+      return Math.max(0, merged.length - MAX_RECORDS);
+    }
+
+    function savedToast(dropped) {
+      showToast(dropped ? `저장했습니다 (오래된 메모 ${dropped}건 정리)` : "저장했습니다");
+    }
+
+    let toastTimer = 0;
     function showToast(message) {
       toast.textContent = message;
       toast.classList.add("show");
-      window.setTimeout(() => toast.classList.remove("show"), 1600);
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toast.classList.remove("show"), Math.max(1600, message.length * 70));
     }
 
     function joinNatural(items, fallback) {
@@ -1754,6 +1942,23 @@
       return [...new Set([...(primary || []), ...(fallback || [])].filter(Boolean))];
     }
 
+    // 필수 문장(priority 0)은 모두 넣고, 선택 문장은 목표 글자수(+15자)와 나이스 바이트 한도를 넘지 않는 것만 우선순위대로 채운다.
+    function fitToTarget(items, target) {
+      const joined = (list) => [...list].sort((a, b) => a.order - b.order).map((item) => item.text).join(" ");
+      const selected = items.filter((item) => item.priority === 0);
+      let total = joined(selected).length;
+      const optionals = items.filter((item) => item.priority > 0).sort((a, b) => a.priority - b.priority);
+      for (const option of optionals) {
+        if (total >= target - 25) break;
+        const nextTotal = total + option.text.length + 1;
+        if (nextTotal > target + 15) continue;
+        if (neisBytes(joined([...selected, option])) > NEIS_BYTE_LIMIT) continue;
+        selected.push(option);
+        total = nextTotal;
+      }
+      return joined(selected);
+    }
+
     function makeSentence(data = getFormState()) {
       const gradeLevel = data.gradeLevel || "중학교";
       const unitName = data.unitName || "경전 본문 해석과 삶의 적용";
@@ -1761,8 +1966,8 @@
       const toneMode = data.toneMode || "balanced";
       const lengthMode = data.lengthMode || "standard";
       const studentIndex = Number(data.studentIndex || 0);
-      const diversityMode = data.diversityMode || "low";
-      const isBatch = diversityMode !== "low";
+      const diversityMode = data.diversityMode || "medium";
+      const isBatch = Boolean(data.isBatch);
       const seedName = String(data.student || "");
       const focusKey = data.focusType && focusProfiles[data.focusType] ? data.focusType : "";
       const focus = focusKey ? focusProfiles[focusKey] : null;
@@ -1779,18 +1984,19 @@
       const gradeYear = normalizeGradeYear(data.gradeYear);
       const themeLine = themeLineFor(unitName, isBatch ? seededIndex(`${seedName}-th`, studentIndex, 997) : variantIndex, gradeYear);
       const gradeLine = gradeLineFor(gradeYear, isBatch ? seededIndex(`${seedName}-gr`, studentIndex, 997) : variantIndex);
-      const closer = composeCloser(isBatch ? studentIndex * 7 + (diversityMode === "high" ? 13 : 0) : variantIndex * 7);
+      const closerSeed = isBatch ? studentIndex * 7 + (diversityMode === "high" ? 13 : 0) : variantIndex * 7;
+      const closer = composeCloser(closerSeed);
       const toneSet = pickByIndex(individualToneSets, isBatch ? studentIndex * 3 : variantIndex, individualToneSets[0]);
       const toneLine = (toneSet[toneMode] || toneSet.balanced)(strengthText);
       const coreLine = focusLine || toneLine;
       const unitOpening = unitNarrativeFor(unitName, isBatch ? seededIndex(`${seedName}-un`, studentIndex, 997) : variantIndex);
-      const memoText = evidence ? `관찰 근거로는 ${evidence.replace(/\s+/g, " ")}` : "";
+      const memoText = memoSentence(evidence);
 
       if (isBatch) {
         const target = Math.min(1000, Math.max(200, Number(data.lengthTarget) || 400));
         const engagement = pickByIndex(engagementLines, seededIndex(`${seedName}-eng`, studentIndex, 997), engagementLines[0]);
         const fileActivities = (data.fileActivities || []).slice(0, 2);
-        const memoLine = memoText || pickByIndex(batchMemoFallbacks, seededIndex(`${seedName}-memo`, studentIndex, 997), batchMemoFallbacks[0]);
+        const memoLine = memoText || pickByIndex(memoFallbacks, seededIndex(`${seedName}-memo`, studentIndex, 997), memoFallbacks[0]);
         const outlookLine = pickByIndex(outlookLines, seededIndex(`${seedName}-out`, studentIndex, 997), outlookLines[0]);
 
         const items = [];
@@ -1803,25 +2009,16 @@
         addPart(coreLine, 5, 0);
         addPart(intensityLine, 6, 3);
         addPart(focusLine ? toneLine : "", 7, 4);
-        addPart(composeCloser(studentIndex * 11 + 3), 8, 6);
+        addPart(composeCloser(studentIndex * 11 + 3, closerSeed), 8, 6);
         addPart(outlookLine, 9, 7);
         addPart(closer, 10, 0);
         addPart(composeExpectation(studentIndex * 3), 11, 5);
-
-        const selected = items.filter((item) => item.priority === 0);
-        let total = selected.reduce((sum, item) => sum + item.text.length + 1, -1);
-        const optionals = items.filter((item) => item.priority > 0).sort((a, b) => a.priority - b.priority);
-        for (const option of optionals) {
-          if (total >= target - 25) break;
-          selected.push(option);
-          total += option.text.length + 1;
-        }
-        return selected.sort((a, b) => a.order - b.order).map((item) => item.text).join(" ");
+        return fitToTarget(items, target);
       }
 
       const activities = baseActivities.slice(0, 2);
       const activityText = joinNatural(activities, "수업 활동");
-      const memoLine = memoText || memoFallbacks[Math.abs(variantIndex) % memoFallbacks.length](activityText);
+      const memoLine = memoText || pickByIndex(memoFallbacks, variantIndex, memoFallbacks[0]);
       const themePart = themeLine ? `${themeLine} ` : "";
       const gradePart = gradeLine ? `${gradeLine} ` : "";
       const widenVerbs = ["넓힘", "깊게 함", "키워 감"];
@@ -1842,8 +2039,9 @@
 
     function inspectText(text) {
       const found = cautionWords.filter((word) => text.includes(word));
-      const overLimit = text.length > 500;
-      charCount.textContent = overLimit ? `${text.length}자 · 500자 초과` : `${text.length}자`;
+      const { label, overLimit } = lengthSummary(text);
+      charCount.textContent = label;
+      charCount.title = `나이스 기준: 한글 3바이트, 영문·숫자·공백 1바이트, 줄바꿈 2바이트, 최대 ${NEIS_BYTE_LIMIT.toLocaleString("ko-KR")}바이트`;
       charCount.className = overLimit ? "pill caution" : "pill";
       if (found.length) {
         safetyState.textContent = `주의: ${found.join(", ")}`;
@@ -1860,17 +2058,23 @@
       inspectText(sentence);
     }
 
+    function savedDateLabel(savedAt) {
+      const date = new Date(savedAt);
+      return Number.isNaN(date.getTime()) ? "" : `${date.getMonth() + 1}/${date.getDate()} 저장`;
+    }
+
     function renderRecords() {
       const records = getRecords();
+      savedCount.textContent = String(records.length);
       if (!records.length) {
-        savedList.innerHTML = '<div class="empty">아직 저장한 메모가 없습니다. 초안을 만든 뒤 학생 메모 저장을 누르면 이곳에 쌓입니다.</div>';
+        savedList.innerHTML = '<div class="empty">아직 저장한 메모가 없습니다. 개별 학생 초안의 학생 메모 저장이나 반 전체 결과의 저장을 누르면 이곳에 쌓입니다.</div>';
         return;
       }
 
       savedList.innerHTML = records.map((record, index) => `
         <article class="saved-item">
           <div class="saved-title">
-            <span>${escapeHtml(record.subject || "과목 미입력")}</span>
+            <span>${escapeHtml([record.label, record.subject || "과목 미입력", savedDateLabel(record.savedAt)].filter(Boolean).join(" · "))}</span>
             <span class="mini-actions">
               <button class="mini" type="button" data-copy="${index}">복사</button>
               <button class="mini" type="button" data-delete="${index}">삭제</button>
@@ -1919,13 +2123,6 @@
       if (["학업", "학업 역량", "학업 역량 중심", "academic"].includes(raw)) return "academic";
       if (["공동체", "공동체 태도", "공동체 태도 중심", "community"].includes(raw)) return "community";
       return "balanced";
-    }
-
-    function normalizeLength(value) {
-      const raw = String(value || "").trim();
-      if (["짧게", "short"].includes(raw)) return "short";
-      if (["풍부하게", "길게", "long"].includes(raw)) return "long";
-      return "standard";
     }
 
     function normalizeFocus(value) {
@@ -2069,113 +2266,205 @@
       return entries;
     }
 
-    function xmlText(value) {
-      return String(value || "")
-        .replaceAll("&lt;", "<")
-        .replaceAll("&gt;", ">")
-        .replaceAll("&amp;", "&")
-        .replaceAll("&quot;", '"')
-        .replaceAll("&apos;", "'");
-    }
-
     function columnIndex(ref) {
-      const letters = String(ref || "").replace(/[0-9]/g, "");
+      const letters = String(ref || "").toUpperCase().replace(/[^A-Z]/g, "");
       let total = 0;
       for (const letter of letters) total = total * 26 + letter.charCodeAt(0) - 64;
       return total - 1;
     }
 
-    function parseSharedStrings(xml) {
-      return [...String(xml || "").matchAll(/<si[^>]*>([\s\S]*?)<\/si>/g)].map((match) => {
-        return [...match[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map((item) => xmlText(item[1])).join("");
-      });
+    function entryText(entries, name) {
+      return entries[name] ? new TextDecoder("utf-8").decode(entries[name]) : "";
     }
 
-    function parseWorksheetRows(xml, sharedStrings = []) {
+    function parseXml(text) {
+      const doc = new DOMParser().parseFromString(text, "application/xml");
+      if (doc.getElementsByTagName("parsererror").length) throw new Error("엑셀 XML을 읽을 수 없습니다.");
+      return doc;
+    }
+
+    function childElement(parent, localName) {
+      return [...parent.children].find((element) => element.localName === localName) || null;
+    }
+
+    // <si>나 <is> 안의 글자. 일본어 후리가나 같은 발음 표기(<rPh>)는 뺀다.
+    function richText(node) {
+      return [...node.getElementsByTagNameNS("*", "t")]
+        .filter((item) => item.parentNode.localName !== "rPh")
+        .map((item) => item.textContent)
+        .join("");
+    }
+
+    function parseSharedStrings(xml) {
+      if (!xml) return [];
+      return [...parseXml(xml).getElementsByTagNameNS("*", "si")].map(richText);
+    }
+
+    function cellValue(cell, sharedStrings) {
+      const type = cell.getAttribute("t") || "";
+      if (type === "inlineStr") {
+        const inline = childElement(cell, "is");
+        return inline ? richText(inline) : "";
+      }
+      const value = childElement(cell, "v");
+      const raw = value ? value.textContent : "";
+      if (type === "s") return sharedStrings[Number(raw)] || "";
+      return raw;
+    }
+
+    // 행마다 { element, number, values, cells }를 돌려준다. values는 열 번호 기준으로 빈칸 없이 채운 배열이다.
+    function worksheetRows(doc, sharedStrings) {
       const rows = [];
-      for (const rowMatch of String(xml || "").matchAll(/<row[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g)) {
-        const row = [];
-        for (const cellMatch of rowMatch[2].matchAll(/<c([^>]*)>([\s\S]*?)<\/c>/g)) {
-          const attrs = cellMatch[1];
-          const refMatch = attrs.match(/r="([A-Z]+)\d+"/);
-          if (!refMatch) continue;
-          const typeMatch = attrs.match(/t="([^"]+)"/);
-          const idx = columnIndex(refMatch[1]);
-          const type = typeMatch ? typeMatch[1] : "";
-          const body = cellMatch[2];
-          const textMatch = body.match(/<t[^>]*>([\s\S]*?)<\/t>/);
-          const valueMatch = body.match(/<v>([\s\S]*?)<\/v>/);
-          let value = "";
-          if (type === "s" && valueMatch) value = sharedStrings[Number(valueMatch[1])] || "";
-          else if (textMatch) value = xmlText(textMatch[1]);
-          else if (valueMatch) value = xmlText(valueMatch[1]);
-          row[idx] = value;
+      let previousRow = 0;
+      for (const rowElement of doc.getElementsByTagNameNS("*", "row")) {
+        const number = Number(rowElement.getAttribute("r")) || previousRow + 1;
+        previousRow = number;
+        const values = [];
+        const cells = new Map();
+        let previousColumn = -1;
+        for (const cell of rowElement.children) {
+          if (cell.localName !== "c") continue;
+          const ref = cell.getAttribute("r");
+          const column = ref ? columnIndex(ref) : previousColumn + 1;
+          previousColumn = column;
+          values[column] = cellValue(cell, sharedStrings);
+          cells.set(column, cell);
         }
-        rows.push(row);
+        rows.push({ element: rowElement, number, values: Array.from(values, (value) => value ?? ""), cells });
       }
       return rows;
     }
 
+    // 파일 안의 저장 순서가 아니라 통합문서의 첫 번째 시트를 고른다.
+    function firstSheetPath(entries) {
+      try {
+        const workbook = parseXml(entryText(entries, "xl/workbook.xml"));
+        const sheet = workbook.getElementsByTagNameNS("*", "sheet")[0];
+        const relationId = sheet ? [...sheet.attributes].find((attr) => attr.localName === "id")?.value : "";
+        const rels = parseXml(entryText(entries, "xl/_rels/workbook.xml.rels"));
+        const relation = [...rels.getElementsByTagNameNS("*", "Relationship")].find((item) => item.getAttribute("Id") === relationId);
+        const target = relation ? relation.getAttribute("Target") || "" : "";
+        const path = target.startsWith("/") ? target.slice(1) : `xl/${target}`;
+        if (target && entries[path]) return path;
+      } catch (error) {
+        // 통합문서 정보를 못 읽으면 아래의 시트 번호 순서로 대신 찾는다.
+      }
+      const sheetNumber = (name) => Number(name.match(/sheet(\d+)\.xml$/)[1]);
+      const sheets = Object.keys(entries)
+        .filter((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))
+        .sort((a, b) => sheetNumber(a) - sheetNumber(b));
+      if (!sheets.length) throw new Error("엑셀 시트를 찾을 수 없습니다.");
+      return sheets[0];
+    }
+
+    // 탭·줄바꿈·따옴표가 든 칸은 따옴표로 감싸 parseDelimited가 한 칸으로 읽게 한다.
     function rowsToDelimited(rows) {
-      return rows.map((row) => row.map((cell) => String(cell || "").includes("\t") ? String(cell).replaceAll("\t", " ") : String(cell || "")).join("\t")).join("\n");
+      const cellText = (cell) => {
+        const text = String(cell ?? "");
+        return /["\t\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+      };
+      return rows.map((row) => row.map(cellText).join("\t")).join("\n");
     }
 
     async function readXlsxRows(arrayBuffer) {
       const entries = await readZipEntries(arrayBuffer);
-      const decoder = new TextDecoder("utf-8");
-      const sharedStringsXml = entries["xl/sharedStrings.xml"] ? decoder.decode(entries["xl/sharedStrings.xml"]) : "";
-      const sharedStrings = parseSharedStrings(sharedStringsXml);
-      const sheetName = Object.keys(entries).find((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name));
-      if (!sheetName) throw new Error("엑셀 시트를 찾을 수 없습니다.");
-      const sheetXml = decoder.decode(entries[sheetName]);
-      return parseWorksheetRows(sheetXml, sharedStrings);
+      const sharedStrings = parseSharedStrings(entryText(entries, "xl/sharedStrings.xml"));
+      const sheetDoc = parseXml(entryText(entries, firstSheetPath(entries)));
+      return worksheetRows(sheetDoc, sharedStrings).map((row) => row.values);
+    }
+
+    async function readTextFile(file) {
+      const buffer = await file.arrayBuffer();
+      try {
+        return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+      } catch (error) {
+        // 한글 엑셀의 기본 CSV 저장 형식은 EUC-KR(CP949)이다.
+        return new TextDecoder("euc-kr").decode(buffer);
+      }
+    }
+
+    const HEADER_ALIASES = {
+      classNumber: ["반/번호", "반번호", "번호"],
+      realName: ["성명", "이름"],
+      studentLabel: ["학생", "학생표시", "student"],
+      studentId: ["학생개인번호"],
+      gradeLevel: ["학교급", "중고", "급"],
+      gradeYear: ["학년", "학년반", "학년/반", "학반", "학년-반", "grade"],
+      subject: ["과목", "과목명", "subject"],
+      unit: ["단원", "수업주제", "주제", "unit"],
+      activity: ["활동", "수업활동", "activity"],
+      strength: ["강점", "학생강점", "strength"],
+      evidence: ["관찰메모", "관찰", "메모", "근거", "세부능력및특기사항", "evidence"],
+      tone: ["문체", "tone"],
+      focus: ["유형", "학생유형", "초점", "focus"],
+      intensity: ["강도", "수행강도", "수준", "intensity"]
+    };
+
+    function normalizeHeader(value) {
+      return String(value || "").replace(/\s+/g, "").toLowerCase();
+    }
+
+    const HEADER_ROW_MARKERS = new Set(
+      ["classNumber", "realName", "studentLabel", "studentId", "evidence"].flatMap((key) => HEADER_ALIASES[key]).map(normalizeHeader)
+    );
+
+    // 나이스 파일처럼 표 위에 제목 행이 있어도 실제 머리글 행을 찾는다.
+    function findHeaderRowIndex(rows) {
+      const index = rows.slice(0, 20).findIndex((row) => row.some((cell) => HEADER_ROW_MARKERS.has(normalizeHeader(cell))));
+      return index < 0 ? 0 : index;
     }
 
     function findCell(row, headers, names) {
-      const normalized = headers.map((header) => header.replace(/\s+/g, "").toLowerCase());
+      const normalized = headers.map(normalizeHeader);
       for (const name of names) {
-        const index = normalized.indexOf(name.replace(/\s+/g, "").toLowerCase());
-        if (index >= 0) return row[index] || "";
+        const index = normalized.indexOf(normalizeHeader(name));
+        if (index >= 0) return String(row[index] || "").trim();
       }
       return "";
     }
 
+    // 파일의 단원 이름을 앱의 단원 목록과 맞춘다. 예: "공동체 이웃 사랑" → "공동체, 이웃 사랑, 섬김"
+    function matchKnownUnit(name) {
+      const unitKey = (value) => String(value || "").replace(/[\s,·.、/]+/g, "");
+      const key = unitKey(name);
+      const units = [...defaultUnits, ...getCustomUnits()];
+      const exact = units.find((unit) => unitKey(unit) === key);
+      if (exact) return exact;
+      const partial = key.length >= 4 ? units.find((unit) => unitKey(unit).includes(key) || key.includes(unitKey(unit))) : "";
+      return partial || String(name).trim();
+    }
+
     function rowsToBatch(text) {
-      const rows = parseDelimited(text);
+      const allRows = parseDelimited(text);
+      const rows = allRows.slice(findHeaderRowIndex(allRows));
       if (rows.length < 2) return [];
-      const headers = rows[0].map((header) => header.trim());
+      const headers = rows[0].map((header) => String(header).trim());
       return rows.slice(1).map((row) => {
-        const name = findCell(row, headers, ["성명", "학생", "학생표시", "이름", "student"]);
-        const classNumber = findCell(row, headers, ["반/번호", "반번호", "번호"]);
-        const student = [classNumber, name].filter(Boolean).join(" ");
-        const gradeLevel = findCell(row, headers, ["학교급", "중고", "급", "grade"]) || document.querySelector("#gradeLevel").value;
-        const gradeFromFile = normalizeGradeYear(findCell(row, headers, ["학년", "학년반", "학년/반", "학반", "학년-반", "grade"]));
-        const subjectName = findCell(row, headers, ["과목", "과목명", "subject"]) || document.querySelector("#subjectName").value;
-        const unitName = findCell(row, headers, ["단원", "수업주제", "주제", "unit"]) || document.querySelector("#unitName").value;
-        const activityText = findCell(row, headers, ["활동", "수업활동", "activity"]);
-        const strengthText = findCell(row, headers, ["강점", "학생강점", "strength"]);
-        const evidence = findCell(row, headers, ["관찰메모", "관찰", "메모", "근거", "세부능력및특기사항", "세부능력 및 특기사항", "evidence"]);
-        const toneMode = normalizeTone(findCell(row, headers, ["문체", "tone"]) || document.querySelector("#toneMode").value);
-        const lengthMode = normalizeLength(findCell(row, headers, ["분량", "length"]) || document.querySelector("#lengthMode").value);
-        const focusType = normalizeFocus(findCell(row, headers, ["유형", "학생유형", "초점", "focus"]));
-        const intensity = normalizeIntensity(findCell(row, headers, ["강도", "수행강도", "수준", "intensity"]));
+        const cell = (key) => findCell(row, headers, HEADER_ALIASES[key]);
+        const classNumber = cell("classNumber");
+        const studentLabel = cell("studentLabel");
+        const fileUnit = cell("unit");
+        const fileActivities = splitList(cell("activity"), activityMap);
+        const gradeFromFile = normalizeGradeYear(cell("gradeYear"));
         return {
           originalRow: row,
           headers,
-          student,
-          gradeLevel: gradeLevel.includes("고") ? "고등학교" : "중학교",
+          student: [classNumber, cell("realName") || studentLabel].filter(Boolean).join(" "),
+          // 저장한 메모에는 성명을 남기지 않는다.
+          recordLabel: classNumber || studentLabel,
+          gradeLevel: cell("gradeLevel").includes("고") ? "고등학교" : "중학교",
           gradeYear: gradeFromFile,
           gradeFromFile: Boolean(gradeFromFile),
-          subjectName,
-          unitName,
-          activities: splitList(activityText, activityMap).length ? splitList(activityText, activityMap) : selectedValues("activity"),
-          fileActivities: splitList(activityText, activityMap),
-          strengths: splitList(strengthText, strengthMap).length ? splitList(strengthText, strengthMap) : selectedValues("strength"),
-          evidence,
-          toneMode,
-          lengthMode,
-          focusType,
-          intensity
+          subjectName: cell("subject"),
+          unitName: fileUnit ? matchKnownUnit(fileUnit) : "",
+          unitFromFile: Boolean(fileUnit),
+          activities: fileActivities,
+          fileActivities,
+          strengths: splitList(cell("strength"), strengthMap),
+          evidence: cell("evidence"),
+          toneMode: cell("tone") ? normalizeTone(cell("tone")) : "",
+          focusType: normalizeFocus(cell("focus")),
+          intensity: normalizeIntensity(cell("intensity"))
         };
       }).filter((item) => item.student || item.evidence);
     }
@@ -2204,12 +2493,12 @@
             <tbody>
               ${batchGenerated.map((item, index) => `
                 <tr>
-                  <td>${escapeHtml(item.student || `학생 ${index + 1}`)}</td>
-                  <td>${gradeCellHtml(item)}</td>
-                  <td>${escapeHtml(focusProfiles[item.focusType]?.label || "공통")}</td>
-                  <td>${escapeHtml(intensityLabel(item.intensity))}</td>
-                  <td>${escapeHtml(item.unitName)}</td>
-                  <td class="batch-result-text">${escapeHtml(item.text)}<div class="help-text">${item.text.length}자${item.text.length > 500 ? " · 500자 초과" : ""}</div></td>
+                  <td class="nowrap">${escapeHtml(item.student || `학생 ${index + 1}`)}</td>
+                  <td class="nowrap">${gradeCellHtml(item)}</td>
+                  <td class="nowrap">${escapeHtml(focusProfiles[item.focusType]?.label || "공통")}</td>
+                  <td class="nowrap">${escapeHtml(intensityLabel(item.intensity))}</td>
+                  <td class="unit-cell">${escapeHtml(item.unitName)}${item.unitFromFile ? '<div class="help-text">파일 단원</div>' : ""}</td>
+                  <td class="batch-result-text">${escapeHtml(item.text)}${lengthNoteHtml(item.text)}</td>
                   <td>
                     <span class="mini-actions">
                       <button class="mini" type="button" data-batch-copy="${index}">복사</button>
@@ -2222,6 +2511,11 @@
           </table>
         </div>
       `;
+    }
+
+    function lengthNoteHtml(text) {
+      const { label, overLimit } = lengthSummary(text);
+      return `<div class="help-text${overLimit ? " over-limit" : ""}">${escapeHtml(label)}</div>`;
     }
 
     function gradeCellHtml(item) {
@@ -2247,6 +2541,7 @@
         diversityMode: document.querySelector("#diversityMode").value,
         focusMode: document.querySelector("#batchFocusMode").value,
         intensityMode: document.querySelector("#batchIntensityMode").value,
+        toneMode: document.querySelector("#batchToneMode").value,
         autoRotate: document.querySelector("#autoRotateOptions").checked,
         unitMode: document.querySelector("#batchUnitMode").value,
         selectedUnits: selectedBatchUnits(),
@@ -2257,8 +2552,8 @@
 
     function diversifyRow(row, index, options) {
       const focusType = row.focusType || (options.focusMode === "auto" ? pickByIndex(focusOrder, index) : options.focusMode);
-      const intensityCycle = ["stable", "growth", "basic", "strong", "stable", "support"];
-      const intensity = row.intensity || (options.autoRotate ? pickByIndex(intensityCycle, seededIndex(`${row.student || ""}-lvl`, index, 997)) : options.intensityMode);
+      // 수행 강도는 평가 문장이므로 무작위로 섞지 않는다. 파일의 강도 열이 없으면 선택한 값을 그대로 쓴다.
+      const intensity = row.intensity || options.intensityMode;
       const focus = focusProfiles[focusType] || focusProfiles.understanding;
       const activityLimit = options.diversityMode === "high" ? 2 : 1;
       const strengthLimit = options.diversityMode === "high" ? 2 : 1;
@@ -2268,19 +2563,22 @@
       const rotatedStrengths = options.autoRotate
         ? [pickByIndex(focus.strengths, seededIndex(`${row.student || ""}-str`, index, 97)), ...row.strengths].slice(0, strengthLimit + 1)
         : row.strengths;
-      const units = options.selectedUnits && options.selectedUnits.length ? options.selectedUnits : [row.unitName || unitSelect.value];
-      const unitIndex = options.unitMode === "random" ? seededIndex(row.student || row.studentId || row.originalRow?.join("-") || "", index, units.length) : index % units.length;
+      const units = options.selectedUnits;
+      const unitIndex = options.unitMode === "random" ? seededIndex(row.student || row.originalRow?.join("-") || "", index, units.length) : index % units.length;
       const forcedGrade = normalizeGradeYear(options.gradeMode);
       return {
         ...row,
+        isBatch: true,
         studentIndex: index,
         focusType,
         intensity,
+        toneMode: row.toneMode || options.toneMode,
         diversityMode: options.diversityMode,
         lengthTarget: options.lengthTarget,
         gradeYear: forcedGrade || row.gradeYear || "",
         gradeSource: forcedGrade ? "forced" : (row.gradeFromFile ? "file" : "none"),
-        unitName: units[unitIndex] || row.unitName,
+        // 파일에 단원 열이 있으면 그 값이 우선이고, 없을 때만 체크한 주제에서 배정한다.
+        unitName: row.unitFromFile ? row.unitName : (units[unitIndex] || ""),
         activities: uniqueMerge(rotatedActivities, row.activities),
         strengths: uniqueMerge(rotatedStrengths, row.strengths)
       };
@@ -2290,6 +2588,10 @@
       const text = batchPaste.value.trim() || loadedBatchText.trim();
       const rows = rowsToBatch(text);
       const options = getBatchOptions();
+      if (!options.selectedUnits.length && rows.some((row) => !row.unitFromFile)) {
+        showToast("단원 열이 없는 학생이 있습니다. 반 전체 주제를 하나 이상 체크해 주세요");
+        return;
+      }
       batchGenerated = rows.map((row, index) => {
         const diversified = diversifyRow(row, index, options);
         return {
@@ -2377,15 +2679,13 @@
     }
 
     function saveBatchItems(items) {
-      if (!items.length) return;
-      const records = getRecords();
-      const next = items.map((item) => ({
-        name: item.student || "",
+      if (!items.length) return 0;
+      return addRecords(items.map((item) => ({
+        label: item.recordLabel || "",
         subject: item.subjectName || "종교",
         text: item.text,
         savedAt: new Date().toISOString()
-      }));
-      setRecords([...next, ...records].slice(0, 160));
+      })));
     }
 
     function educationRowsFromBatch() {
@@ -2422,14 +2722,38 @@
       return num || name ? `nm:${num}|${name}` : "";
     }
 
+    // 기존 칸의 서식(s)은 살리고 글자만 바꾼다. 칸이 없으면 열 순서에 맞는 자리에 새로 끼운다.
+    function setInlineStringCell(doc, row, column, text) {
+      const ns = doc.documentElement.namespaceURI;
+      const existing = row.cells.get(column);
+      const cell = doc.createElementNS(ns, "c");
+      cell.setAttribute("r", `${columnName(column)}${row.number}`);
+      const style = existing ? existing.getAttribute("s") : null;
+      if (style) cell.setAttribute("s", style);
+      cell.setAttribute("t", "inlineStr");
+      const inline = doc.createElementNS(ns, "is");
+      const textNode = doc.createElementNS(ns, "t");
+      textNode.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
+      textNode.textContent = text;
+      inline.appendChild(textNode);
+      cell.appendChild(inline);
+      if (existing) {
+        existing.replaceWith(cell);
+      } else {
+        const nextColumn = [...row.cells.keys()].filter((key) => key > column).sort((a, b) => a - b)[0];
+        row.element.insertBefore(cell, nextColumn === undefined ? null : row.cells.get(nextColumn));
+      }
+      row.cells.set(column, cell);
+    }
+
     async function patchOriginalXlsx() {
       const entries = await readZipEntries(loadedXlsxBytes);
-      const decoder = new TextDecoder("utf-8");
-      const sheetName = Object.keys(entries).find((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name));
-      if (!sheetName) throw new Error("원본에서 엑셀 시트를 찾을 수 없습니다.");
-      const sharedStrings = parseSharedStrings(entries["xl/sharedStrings.xml"] ? decoder.decode(entries["xl/sharedStrings.xml"]) : "");
-      let sheetXml = decoder.decode(entries[sheetName]);
-      const rowsParsed = parseWorksheetRows(sheetXml, sharedStrings);
+      const sheetName = firstSheetPath(entries);
+      const sharedStrings = parseSharedStrings(entryText(entries, "xl/sharedStrings.xml"));
+      const sheetText = entryText(entries, sheetName);
+      const sheetDoc = parseXml(sheetText);
+      const sheetRows = worksheetRows(sheetDoc, sharedStrings);
+      const rowsParsed = sheetRows.map((row) => row.values);
 
       const headerRowIndex = rowsParsed.findIndex((row) => row.some((cell) => headerKey(cell) === "세부능력및특기사항"));
       if (headerRowIndex < 0) throw new Error("원본에서 세부능력 및 특기사항 열을 찾을 수 없습니다.");
@@ -2447,29 +2771,19 @@
       });
       if (!textByKey.size) throw new Error("학생을 식별할 열(학생개인번호 또는 반/번호, 성명)이 없습니다.");
 
-      const colLetter = columnName(setakCol);
-      let rowCursor = -1;
       let patched = 0;
-      sheetXml = sheetXml.replace(/<row\b[^>]*\br="\d+"[^>]*>[\s\S]*?<\/row>/g, (rowXmlFull) => {
-        rowCursor += 1;
-        if (rowCursor <= headerRowIndex) return rowXmlFull;
-        const key = studentKeyFrom(rowsParsed[rowCursor] || [], idCol, numCol, nameCol);
+      sheetRows.slice(headerRowIndex + 1).forEach((row) => {
+        const key = studentKeyFrom(row.values, idCol, numCol, nameCol);
         const text = key ? textByKey.get(key) : undefined;
-        if (text === undefined) return rowXmlFull;
-        const rowNumber = (rowXmlFull.match(/<row\b[^>]*\br="(\d+)"/) || [])[1];
-        const ref = `${colLetter}${rowNumber}`;
-        const cellRegex = new RegExp(`<c([^>]*\\br="${ref}"[^>]*?)(?:/>|>[\\s\\S]*?</c>)`);
-        const existing = rowXmlFull.match(cellRegex);
-        const styleMatch = existing ? existing[1].match(/\bs="(\d+)"/) : null;
-        const styleAttr = styleMatch ? ` s="${styleMatch[1]}"` : "";
-        const newCell = `<c r="${ref}"${styleAttr} t="inlineStr"><is><t xml:space="preserve">${escapeXml(text)}</t></is></c>`;
+        if (text === undefined) return;
+        setInlineStringCell(sheetDoc, row, setakCol, text);
         patched += 1;
-        if (existing) return rowXmlFull.replace(cellRegex, () => newCell);
-        return rowXmlFull.replace(/<\/row>$/, () => `${newCell}</row>`);
       });
       if (!patched) throw new Error("원본과 매칭되는 학생이 없습니다.");
 
-      entries[sheetName] = new TextEncoder().encode(sheetXml);
+      const declaration = (sheetText.match(/^\s*<\?xml[^?]*\?>/) || [`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`])[0].trim();
+      const serialized = new XMLSerializer().serializeToString(sheetDoc).replace(/^<\?xml[^?]*\?>\s*/, "");
+      entries[sheetName] = utf8Encoder.encode(`${declaration}\n${serialized}`);
       const files = Object.keys(entries).map((name) => ({ name, content: entries[name] }));
       const bytes = makeStoredZip(files);
       downloadBlob(loadedXlsxName || "과목세특_결과.xlsx", new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
@@ -2695,11 +3009,15 @@
       showToast("예시를 채웠습니다");
     });
 
-    document.querySelector("#clearBtn").addEventListener("click", () => {
+    function resetSingleForm() {
       form.reset();
       document.querySelectorAll("[data-group] input").forEach((item) => item.checked = false);
       resultText.textContent = "왼쪽에서 관찰 근거를 입력한 뒤 초안 만들기를 누르세요.";
       inspectText("");
+    }
+
+    document.querySelector("#clearBtn").addEventListener("click", () => {
+      resetSingleForm();
       showToast("입력을 비웠습니다");
     });
 
@@ -2756,15 +3074,12 @@
         showToast("먼저 초안을 만들어 주세요");
         return;
       }
-      const records = getRecords();
-      records.unshift({
-        name: "",
+      savedToast(addRecords([{
+        label: "",
         subject: document.querySelector("#subjectName").value,
         text,
         savedAt: new Date().toISOString()
-      });
-      setRecords(records.slice(0, 80));
-      showToast("저장했습니다");
+      }]));
     });
 
     savedList.addEventListener("click", (event) => {
@@ -2795,24 +3110,33 @@
           loadedXlsxName = file.name;
           loadedBatchText = rowsToDelimited(rows);
           batchPaste.value = loadedBatchText;
-          showToast(`엑셀 ${Math.max(0, rows.length - 1)}행을 불러왔습니다`);
+          showLoadedToast("엑셀");
         } catch (error) {
           if (loadToken !== batchLoadToken) return;
           showToast(error.message || "엑셀을 읽지 못했습니다");
         }
         return;
       }
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
+      try {
+        const text = await readTextFile(file);
         if (loadToken !== batchLoadToken) return;
         loadedXlsxBytes = null;
         loadedXlsxName = "";
-        loadedBatchText = String(reader.result || "");
+        loadedBatchText = text;
         batchPaste.value = loadedBatchText;
-        showToast("CSV를 불러왔습니다");
-      });
-      reader.readAsText(file, "utf-8");
+        showLoadedToast("CSV");
+      } catch (error) {
+        if (loadToken !== batchLoadToken) return;
+        showToast("파일을 읽지 못했습니다");
+      }
     });
+
+    function showLoadedToast(kind) {
+      const count = rowsToBatch(loadedBatchText).length;
+      showToast(count
+        ? `${kind}에서 학생 ${count}명을 찾았습니다`
+        : `${kind}에서 학생 행을 찾지 못했습니다. 머리글(성명, 반/번호, 학생 등)을 확인해 주세요`);
+    }
 
     document.querySelector("#batchGenerateBtn").addEventListener("click", generateBatch);
 
@@ -2888,8 +3212,7 @@
         copyText(batchGenerated[Number(copyIndex)].text);
       }
       if (saveIndex !== undefined) {
-        saveBatchItems([batchGenerated[Number(saveIndex)]]);
-        showToast("저장했습니다");
+        savedToast(saveBatchItems([batchGenerated[Number(saveIndex)]]));
       }
     });
 
@@ -2899,15 +3222,65 @@
         showToast("내보낼 메모가 없습니다");
         return;
       }
-      const rows = [["과목", "세특 초안", "저장 시각"], ...records.map((record) => [
+      const rows = [["학생", "과목", "세특 초안", "나이스 바이트", "저장 시각"], ...records.map((record) => [
+        record.label || "",
         record.subject || "",
         record.text || "",
+        neisBytes(record.text),
         record.savedAt || ""
       ])];
       downloadCsv("religion-setak-records.csv", rows);
       showToast("CSV를 만들었습니다");
     });
 
+    document.querySelector("#wipeAllBtn").addEventListener("click", () => {
+      const count = getRecords().length;
+      if (!window.confirm(`이 PC에 저장된 학생 메모 ${count}건과 지금 화면의 입력·생성 결과를 모두 지웁니다. 직접 추가한 단원/수업 주제는 남습니다. 계속할까요?`)) return;
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (error) {
+        writeRecords([]);
+      }
+      clearBatchWork();
+      resetSingleForm();
+      renderRecords();
+      showToast("이 PC에 남은 학생 기록을 지웠습니다");
+    });
+
+    const tabs = [...document.querySelectorAll('[role="tab"]')];
+
+    function selectTab(name, moveFocus = false) {
+      tabs.forEach((tab) => {
+        const active = tab.dataset.tab === name;
+        tab.setAttribute("aria-selected", String(active));
+        tab.tabIndex = active ? 0 : -1;
+        document.getElementById(tab.getAttribute("aria-controls")).hidden = !active;
+        if (active && moveFocus) tab.focus();
+      });
+      try {
+        localStorage.setItem(TAB_STORAGE_KEY, name);
+      } catch (error) {
+        // 마지막 탭을 기억하지 못해도 쓰는 데는 지장이 없다.
+      }
+    }
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => selectTab(tab.dataset.tab));
+      tab.addEventListener("keydown", (event) => {
+        const moves = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: tabs.length - 1 };
+        if (!(event.key in moves)) return;
+        event.preventDefault();
+        selectTab(tabs[(moves[event.key] + tabs.length) % tabs.length].dataset.tab, true);
+      });
+    });
+
+    let initialTab = "batch";
+    try {
+      initialTab = localStorage.getItem(TAB_STORAGE_KEY) || "batch";
+    } catch (error) {
+      initialTab = "batch";
+    }
+    selectTab(tabs.some((tab) => tab.dataset.tab === initialTab) ? initialTab : "batch");
     renderUnits();
     renderBatchResults();
     renderRecords();
