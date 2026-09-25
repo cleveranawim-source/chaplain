@@ -111,7 +111,15 @@ module.exports = async function handler(req, res) {
   const accessCode = process.env.ACCESS_CODE || "";
 
   if (req.method === "GET") {
-    return res.status(200).json({ enabled: Boolean(apiKey), requiresCode: Boolean(accessCode), model: MODEL });
+    // 설정 점검용: 어느 환경·브랜치·커밋의 배포인지 함께 알려 준다(비밀 값은 넣지 않는다).
+    return res.status(200).json({
+      enabled: Boolean(apiKey),
+      requiresCode: Boolean(accessCode),
+      model: MODEL,
+      environment: process.env.VERCEL_ENV || "local",
+      branch: process.env.VERCEL_GIT_COMMIT_REF || "",
+      commit: (process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 7)
+    });
   }
   if (req.method !== "POST") {
     res.setHeader("Allow", "GET, POST");
